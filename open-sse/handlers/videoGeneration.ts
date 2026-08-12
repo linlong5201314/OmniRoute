@@ -51,7 +51,6 @@ import {
   fetchWithTimeout,
   getConfiguredTimeout,
 } from "@/shared/utils/fetchTimeout";
-import { handleFalVideoGeneration } from "./mediaGeneration/fal.ts";
 
 /**
  * Resolve the base URL for OpenAI-compatible video generation endpoints.

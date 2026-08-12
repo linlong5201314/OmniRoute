@@ -12,6 +12,10 @@ import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const dockerfile = fs.readFileSync(path.join(repoRoot, "Dockerfile"), "utf-8");
+const railwayGuide = fs.readFileSync(
+  path.join(repoRoot, "docs", "ops", "RAILWAY_DEPLOYMENT_GUIDE.md"),
+  "utf-8"
+);
 
 test("root Dockerfile avoids service-specific cache mounts for Railway Metal", () => {
   const cacheMounts = [...dockerfile.matchAll(/--mount=type=cache(?:,|\s)/g)];
@@ -21,5 +25,13 @@ test("root Dockerfile avoids service-specific cache mounts for Railway Metal", (
     [],
     "the shared Dockerfile must not use cache mounts because Railway requires a hard-coded " +
       "service ID in each cache mount; keep cache mounts in service-specific Dockerfiles only"
+  );
+});
+
+test("Railway deployment guide has the MDX frontmatter required by the docs build", () => {
+  assert.match(
+    railwayGuide,
+    /^---\r?\ntitle:\s*"[^"]+"\r?\nversion:\s*\S+\r?\nlastUpdated:\s*\d{4}-\d{2}-\d{2}\r?\n---\r?\n/,
+    "docs imported by the dashboard must define title, version, and lastUpdated frontmatter"
   );
 });

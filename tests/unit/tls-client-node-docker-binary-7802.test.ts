@@ -71,6 +71,12 @@ test("Dockerfile's --ignore-scripts npm ci is compensated for tls-client-node's 
   );
 
   assert.match(
+    dockerfile,
+    /chown -R root:root \/app\/native\/tls-client[\s\\]*&& chmod 0555 \/app\/native\/tls-client[\s\\]*&& chmod 0555 \/app\/native\/tls-client\/libtls-client\.so/,
+    "the verified native library must remain root-owned and read-only at runtime"
+  );
+
+  assert.match(
     postinstall,
     /fixTlsClientNodeBinary/,
     "npm packaging must continue copying the native binary into standalone artifacts"

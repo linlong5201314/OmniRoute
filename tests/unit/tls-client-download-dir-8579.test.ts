@@ -74,6 +74,18 @@ test("buildNativeTlsClientOptions prefers the immutable Docker library over DATA
   });
 });
 
+test("buildNativeTlsClientOptions rejects a relative native library override", async () => {
+  process.env.OMNIROUTE_TLS_CLIENT_NATIVE_LIBRARY_PATH = "native/tls-client/libtls-client.so";
+
+  const { buildNativeTlsClientOptions } =
+    await import("../../open-sse/services/tlsClientDownloadDir.ts");
+
+  assert.throws(
+    () => buildNativeTlsClientOptions(),
+    /OMNIROUTE_TLS_CLIENT_NATIVE_LIBRARY_PATH must be an absolute path/
+  );
+});
+
 test("all web-provider tls clients wire downloadDir through buildNativeTlsClientOptions (#8579)", () => {
   for (const relPath of TLS_CLIENT_MODULES) {
     const source = readFileSync(join(ROOT, relPath), "utf8");
