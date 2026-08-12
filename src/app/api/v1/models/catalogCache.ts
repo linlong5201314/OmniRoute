@@ -12,9 +12,19 @@
  * Auth rejection is NOT handled here and must stay in the caller: it depends on
  * live per-request state (dashboard cookie, API key) and must never be cached.
  */
+import { after } from "next/server";
+
 import { getModelCatalogCacheVersion } from "@/lib/db/readCache";
 import { extractApiKey } from "@/sse/services/auth";
 
+import {
+  normalizeCatalogCacheArgs,
+  startCatalogBackgroundRefresh,
+  type CatalogCachePolicy,
+  type CatalogSettings,
+  type InFlightBuild,
+  type RefreshTask,
+} from "./catalogCachePolicy";
 import { isCodexModelCatalogClient } from "./catalogRequest";
 
 export type CachedCatalog = {
@@ -65,6 +75,8 @@ export const CATALOG_STALE_WHILE_REVALIDATE_MS = 30_000;
  */
 export const CATALOG_CACHE_TTL_MS_DEFAULT = 60_000;
 
+export type { CatalogCachePolicy };
+
 const catalogCache = new Map<string, CachedCatalog>();
 
 /**
@@ -75,10 +87,14 @@ const catalogCache = new Map<string, CachedCatalog>();
  * It still resolves to its own original caller (that request legitimately waits
  * on it), just without being persisted.
  */
-type InFlightBuild = { generation: number; promise: Promise<CachedCatalog> };
-const catalogInFlight = new Map<string, InFlightBuild>();
+const catalogInFlight = new Map<string, InFlightBuild<CachedCatalog>>();
 
 let _catalogBuilderRuns = 0;
+let getCatalogStaleWhileRevalidateMsAccessor = () => CATALOG_STALE_WHILE_REVALIDATE_MS;
+
+export function getCatalogStaleWhileRevalidateMs(): number {
+  return getCatalogStaleWhileRevalidateMsAccessor();
+}
 
 function buildCatalogCacheKey(
   request: Request,
@@ -157,6 +173,10 @@ function storePayload(
   return entry;
 }
 
+function defaultBackgroundRefreshScheduler(task: RefreshTask): void {
+  after(task);
+}
+
 /**
  * Kick off a background rebuild so an expired-but-stale-eligible entry can be
  * refreshed without the current request waiting on it. Reuses catalogInFlight —
@@ -177,36 +197,24 @@ function storePayload(
 function scheduleBackgroundRefresh(
   cacheKey: string,
   request: Request,
-  buildPayload: (request: Request) => Promise<CatalogPayload>
+  buildPayload: (request: Request) => Promise<CatalogPayload>,
+  policy: CatalogCachePolicy = {}
 ): void {
   if (catalogInFlight.has(cacheKey)) return; // a refresh for this key is already running
 
   const generation = getModelCatalogCacheVersion();
-  const refreshPromise: Promise<CachedCatalog> = new Promise((resolve, reject) => {
-    setTimeout(() => {
-      runBuilder(buildPayload, request)
-        .then((payload) => resolve(storePayload(cacheKey, payload, generation)))
-        .catch((err) => {
-          console.error(
-            `[catalog] Background stale-while-revalidate refresh failed for key "${cacheKey}":`,
-            err
-          );
-          reject(err);
-        });
-    }, 0);
+  startCatalogBackgroundRefresh({
+    cacheKey,
+    generation,
+    inFlight: catalogInFlight,
+    isCurrentGeneration: (buildGeneration) => buildGeneration === lastSeenCatalogCacheVersion,
+    runRefresh: async () => {
+      const payload = await runBuilder(buildPayload, request);
+      return storePayload(cacheKey, payload, generation);
+    },
+    policy,
+    defaultScheduler: defaultBackgroundRefreshScheduler,
   });
-  // Nobody on the stale path awaits this, so pre-handle the rejection; a cold-path
-  // caller that joins it via catalogInFlight attaches its own handler and still
-  // observes the failure.
-  refreshPromise.catch(() => {});
-
-  catalogInFlight.set(cacheKey, { generation, promise: refreshPromise });
-  refreshPromise
-    .catch(() => {})
-    .finally(() => {
-      if (catalogInFlight.get(cacheKey)?.promise === refreshPromise)
-        catalogInFlight.delete(cacheKey);
-    });
 }
 
 function runBuilder(
@@ -228,10 +236,15 @@ export async function resolveCachedCatalogResponse(
   request: Request,
   headerSources: { corsHeaders: Record<string, string>; diagnosticHeaders: Record<string, string> },
   buildPayload: (request: Request) => Promise<CatalogPayload>,
-  catalogSettings?: { hideAutoCombos?: boolean; hideNoThinkVariants?: boolean }
+  catalogSettingsOrPolicy?: CatalogSettings | CatalogCachePolicy,
+  policyOrSettings?: CatalogCachePolicy | CatalogSettings
 ): Promise<Response> {
   const { corsHeaders, diagnosticHeaders } = headerSources;
   dropCatalogCacheIfStateChanged();
+  const { catalogSettings, policy } = normalizeCatalogCacheArgs(
+    catalogSettingsOrPolicy,
+    policyOrSettings
+  );
 
   const cacheKey = buildCatalogCacheKey(request, catalogSettings);
   const now = Date.now();
@@ -252,9 +265,10 @@ export async function resolveCachedCatalogResponse(
   if (
     cached &&
     cached.status === 200 &&
-    now - cached.expiresAt <= CATALOG_STALE_WHILE_REVALIDATE_MS
+    now - cached.expiresAt <=
+      (policy.getStaleWhileRevalidateMs?.() ?? getCatalogStaleWhileRevalidateMs())
   ) {
-    scheduleBackgroundRefresh(cacheKey, request, buildPayload);
+    scheduleBackgroundRefresh(cacheKey, request, buildPayload, policy);
     return new Response(cached.body, {
       status: cached.status,
       headers: mergeCatalogHeaders(corsHeaders, cached.headers, diagnosticHeaders),
@@ -294,6 +308,7 @@ export function __resetCatalogBuilderRunsForTest(): void {
   catalogCache.clear();
   catalogInFlight.clear();
   lastSeenCatalogCacheVersion = getModelCatalogCacheVersion();
+  getCatalogStaleWhileRevalidateMsAccessor = () => CATALOG_STALE_WHILE_REVALIDATE_MS;
 }
 
 /** Counts full builder executions — proves concurrent requests share one run (#6408). */
@@ -347,4 +362,12 @@ export function __forceCatalogInFlightRejectionForTest(request: Request, error: 
     generation: getModelCatalogCacheVersion(),
     promise: rejected,
   });
+}
+
+export function __setCatalogStaleWhileRevalidateAccessorForTest(accessor: () => number): void {
+  getCatalogStaleWhileRevalidateMsAccessor = accessor;
+}
+
+export function __setCatalogStaleWhileRevalidateMsForTest(ms: number): void {
+  getCatalogStaleWhileRevalidateMsAccessor = () => ms;
 }

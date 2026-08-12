@@ -1,4 +1,4 @@
-import { join } from "node:path";
+import { isAbsolute, join } from "node:path";
 import { resolveDataDir } from "@/lib/dataPaths";
 
 /**
@@ -23,6 +23,9 @@ export function buildNativeTlsClientOptions():
     } {
   const nativeLibraryPath = process.env.OMNIROUTE_TLS_CLIENT_NATIVE_LIBRARY_PATH?.trim();
   if (nativeLibraryPath) {
+    if (!isAbsolute(nativeLibraryPath)) {
+      throw new Error("OMNIROUTE_TLS_CLIENT_NATIVE_LIBRARY_PATH must be an absolute path");
+    }
     return {
       runtimeMode: "native",
       nativeLibraryPath,

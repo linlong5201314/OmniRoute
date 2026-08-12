@@ -184,11 +184,11 @@ export async function getUnifiedModelsResponse(
       request,
       { corsHeaders, diagnosticHeaders },
       buildCatalogPayload,
-      cachePolicy,
       {
         hideAutoCombos: settingsForAuth?.hideAutoCombos === true,
         hideNoThinkVariants: settingsForAuth?.hideNoThinkVariants === true,
-      }
+      },
+      cachePolicy
     );
   } catch (err) {
     // Hard rule #12: never put a raw err.message/err.stack in a response body.

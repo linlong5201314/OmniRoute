@@ -1,3 +1,9 @@
+---
+title: "Railway Deployment Guide"
+version: 3.8.50
+lastUpdated: 2026-08-13
+---
+
 # Railway 部署指南
 
 OmniRoute 可以直接使用仓库根目录的 `Dockerfile` 部署到 Railway。服务按单端口运行：Railway 注入的 `PORT` 会同时承载 Dashboard 和 `/v1/*` API。
