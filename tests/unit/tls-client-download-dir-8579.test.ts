@@ -20,6 +20,7 @@ const TLS_CLIENT_MODULES = [
 ] as const;
 
 const originalDataDir = process.env.DATA_DIR;
+const originalNativeLibraryPath = process.env.OMNIROUTE_TLS_CLIENT_NATIVE_LIBRARY_PATH;
 
 afterEach(() => {
   if (originalDataDir === undefined) {
@@ -27,15 +28,20 @@ afterEach(() => {
   } else {
     process.env.DATA_DIR = originalDataDir;
   }
+
+  if (originalNativeLibraryPath === undefined) {
+    delete process.env.OMNIROUTE_TLS_CLIENT_NATIVE_LIBRARY_PATH;
+  } else {
+    process.env.OMNIROUTE_TLS_CLIENT_NATIVE_LIBRARY_PATH = originalNativeLibraryPath;
+  }
 });
 
 test("resolveTlsClientDownloadDir caches native binary under DATA_DIR/tls-client/bin (#8579)", async () => {
   const dataDir = mkdtempSync(join(tmpdir(), "omniroute-tls-client-8579-"));
   process.env.DATA_DIR = dataDir;
 
-  const { resolveTlsClientDownloadDir } = await import(
-    "../../open-sse/services/tlsClientDownloadDir.ts"
-  );
+  const { resolveTlsClientDownloadDir } =
+    await import("../../open-sse/services/tlsClientDownloadDir.ts");
 
   assert.equal(resolveTlsClientDownloadDir(), join(dataDir, "tls-client", "bin"));
 });
@@ -44,14 +50,28 @@ test("buildNativeTlsClientOptions passes downloadDir to tls-client-node (#8579)"
   const dataDir = mkdtempSync(join(tmpdir(), "omniroute-tls-client-opts-8579-"));
   process.env.DATA_DIR = dataDir;
 
-  const { buildNativeTlsClientOptions } = await import(
-    "../../open-sse/services/tlsClientDownloadDir.ts"
-  );
+  const { buildNativeTlsClientOptions } =
+    await import("../../open-sse/services/tlsClientDownloadDir.ts");
 
   const options = buildNativeTlsClientOptions();
 
   assert.equal(options.runtimeMode, "native");
   assert.equal(options.downloadDir, join(dataDir, "tls-client", "bin"));
+});
+
+test("buildNativeTlsClientOptions prefers the immutable Docker library over DATA_DIR", async () => {
+  const dataDir = mkdtempSync(join(tmpdir(), "omniroute-tls-client-volume-"));
+  const nativeLibraryPath = "/app/native/tls-client/libtls-client.so";
+  process.env.DATA_DIR = dataDir;
+  process.env.OMNIROUTE_TLS_CLIENT_NATIVE_LIBRARY_PATH = nativeLibraryPath;
+
+  const { buildNativeTlsClientOptions } =
+    await import("../../open-sse/services/tlsClientDownloadDir.ts");
+
+  assert.deepEqual(buildNativeTlsClientOptions(), {
+    runtimeMode: "native",
+    nativeLibraryPath,
+  });
 });
 
 test("all web-provider tls clients wire downloadDir through buildNativeTlsClientOptions (#8579)", () => {

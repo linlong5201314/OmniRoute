@@ -32,6 +32,8 @@ OMNIROUTE_ENABLE_LIVE_WS=0
 
 `PORT` 不要手动固定，保留 Railway 自动注入的值。`API_PORT`、`DASHBOARD_PORT`、`LIVE_WS_PORT` 也不要设置，Railway 单服务只需要暴露一个端口。
 
+`OMNIROUTE_TLS_CLIENT_NATIVE_LIBRARY_PATH` 也不要手动设置。Docker 镜像已将经过 SHA-256 校验的原生库放在 `/app/native` 并自动配置该变量；覆盖它可能让 web provider 在启动后加载错误的库路径。
+
 `RAILWAY_RUN_UID=0` 建议直接设置。该镜像默认以非 root 用户运行，而 Railway 官方说明非 root 镜像挂载卷时可能遇到权限问题；设置为 `0` 可避免 `/app/data` 无法写入。不要在没有持久卷的部署中依赖容器文件系统保存数据。
 
 生成 Railway 公网域名后，如果要使用 OAuth 回调或需要固定的公开链接，再设置：

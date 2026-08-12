@@ -32,17 +32,47 @@ test("Dockerfile's --ignore-scripts npm ci is compensated for tls-client-node's 
     "expected postinstall.mjs to repair wreq-js's native binary"
   );
 
-  const dockerfileHandlesIt = /tls-client-node[\s\S]{0,200}(postinstall|rebuild|download)/i.test(
-    dockerfile
+  assert.match(
+    dockerfile,
+    /installTlsClientNative\.mjs/,
+    "Docker builds must use the repo-owned deterministic installer instead of " +
+      "tls-client-node's one-shot GitHub API postinstall"
   );
-  const postinstallHandlesIt = /tls-client-node/i.test(postinstall);
 
-  assert.ok(
-    dockerfileHandlesIt || postinstallHandlesIt,
-    "tls-client-node has no --ignore-scripts compensation in Dockerfile or " +
-      "scripts/build/postinstall.mjs (unlike better-sqlite3 and wreq-js) — " +
-      "node_modules/tls-client-node/bin/ is never populated in the official " +
-      "Docker image, so chatgpt-web/claude-web/grok-web/lmarena/perplexity-web " +
-      "all fail with TlsClientUnavailableError at first request (#7802)"
+  assert.match(
+    dockerfile,
+    /COPY scripts\/build\/installTlsClientNative\.mjs \.\/scripts\/build\/installTlsClientNative\.mjs/,
+    "the deterministic installer must be available before npm ci runs"
+  );
+
+  assert.match(
+    dockerfile,
+    /COPY --from=builder \/app\/native\/tls-client \.\/native\/tls-client/,
+    "the verified native library must be copied from the builder into the runtime image"
+  );
+
+  assert.match(
+    dockerfile,
+    /require\('koffi'\)\.load\('\/app\/native\/tls-client\/libtls-client\.so'\)\.func\('request'/,
+    "the Docker build must load the verified shared library and resolve a required symbol"
+  );
+
+  assert.doesNotMatch(
+    dockerfile,
+    /node node_modules\/tls-client-node\/scripts\/postinstall\.js/,
+    "the upstream postinstall fetches GitHub API metadata and fails on Railway's shared egress"
+  );
+
+  assert.match(
+    dockerfile,
+    /ENV OMNIROUTE_TLS_CLIENT_NATIVE_LIBRARY_PATH=\/app\/native\/tls-client\//,
+    "the runtime must use a native library baked outside /app/data because Railway mounts " +
+      "the persistent volume over /app/data only when the container starts"
+  );
+
+  assert.match(
+    postinstall,
+    /fixTlsClientNodeBinary/,
+    "npm packaging must continue copying the native binary into standalone artifacts"
   );
 });

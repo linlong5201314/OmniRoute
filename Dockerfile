@@ -41,6 +41,7 @@ COPY open-sse/package.json ./open-sse/package.json
 COPY scripts/build/postinstall.mjs ./scripts/build/postinstall.mjs
 COPY scripts/build/postinstallSupport.mjs ./scripts/build/postinstallSupport.mjs
 COPY scripts/build/native-binary-compat.mjs ./scripts/build/native-binary-compat.mjs
+COPY scripts/build/installTlsClientNative.mjs ./scripts/build/installTlsClientNative.mjs
 ENV NPM_CONFIG_LEGACY_PEER_DEPS=true
 # --ignore-scripts blocks broad dependency install/postinstall hooks, closing
 # the supply-chain attack surface where a transitive dep can run arbitrary code
@@ -62,23 +63,18 @@ RUN test -f package-lock.json \
 # instead of `npx --yes`, which would install an arbitrary registry version
 # on-demand and run its lifecycle scripts (Sonar docker:S6505).
 #
-# tls-client-node (chatgpt-web/claude-web/grok-web/lmarena/perplexity-web TLS
-# impersonation) hits the same --ignore-scripts wall: its own postinstall.js
-# fetches a platform .so/.dylib/.dll from the bogdanfinn/tls-client GitHub
-# Releases API and is never invoked when npm ci skips lifecycle scripts. Unlike
-# better-sqlite3 above, that script never throws on failure — it only
-# `console.warn`s and exits 0 — so a rate-limited or offline build would
-# otherwise succeed silently with an empty bin/ and only fail at first request
-# in production (TlsClientUnavailableError, #7802). Run it explicitly here so
-# a broken/rate-limited fetch fails the BUILD loudly instead of shipping a
-# broken image.
+# tls-client-node's postinstall resolves release metadata through api.github.com.
+# Shared Railway builders can exhaust that API's anonymous rate limit, leaving
+# bin/ empty while the upstream script still exits 0 (#7802). Use the repo-owned
+# installer instead: it downloads a pinned release asset directly, verifies the
+# official SHA-256 digest, retries transient failures, and never queries the API.
 RUN npm ci --include=optional --no-audit --no-fund --legacy-peer-deps --ignore-scripts \
   && (cd node_modules/better-sqlite3 \
       && node /usr/local/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js rebuild) \
   && node -e "require('better-sqlite3')(':memory:').close()" \
-  && node node_modules/tls-client-node/scripts/postinstall.js \
-  && (test -n "$(find node_modules/tls-client-node/bin -mindepth 1 -print -quit 2>/dev/null)" \
-      || (echo "tls-client-node native binary missing after postinstall — GitHub API fetch likely rate-limited or failed (#7802)" >&2 && exit 1))
+  && node scripts/build/installTlsClientNative.mjs /app/native/tls-client \
+  && test -s /app/native/tls-client/libtls-client.so \
+  && node -e "require('koffi').load('/app/native/tls-client/libtls-client.so').func('request', 'string', ['string'])"
 
 # Build with Turbopack (stable in Next 16, the repo default). The v3.8.27-era
 # TurbopackInternalError panic ("entered unreachable code: there must be a path to a
@@ -150,6 +146,11 @@ ENV NODE_OPTIONS="--max-old-space-size=${OMNIROUTE_MEMORY_MB}"
 ENV DATA_DIR=/app/data
 RUN mkdir -p /app/data
 
+# Keep the verified tls-client library outside DATA_DIR. Railway mounts its
+# persistent volume over /app/data only when the container starts, which would
+# otherwise hide any native library created there during the image build.
+ENV OMNIROUTE_TLS_CLIENT_NATIVE_LIBRARY_PATH=/app/native/tls-client/libtls-client.so
+
 # `npm run build` (build-next-isolated → assembleStandalone) bundles ALL runtime
 # files into .build/next/standalone/ — .next, node_modules, migrations, scripts,
 # docs, and the previously hand-COPY'd modules below (@swc/helpers, pino-*, split2,
@@ -159,6 +160,7 @@ RUN mkdir -p /app/data
 # (build-output-isolation cleanup). See scripts/build/assembleStandalone.mjs
 # (EXTRA_MODULE_ENTRIES) for the single source of truth.
 COPY --from=builder /app/.build/next/standalone ./
+COPY --from=builder /app/native/tls-client ./native/tls-client
 # better-sqlite3 is the one exception still copied explicitly: assembleStandalone
 # only syncs its native build/ dir; the JS wrapper (lib/, package.json) is left to
 # Next.js tracing. bootstrap-env requires SQLite BEFORE the standalone server

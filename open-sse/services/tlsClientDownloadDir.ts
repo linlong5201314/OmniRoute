@@ -12,10 +12,23 @@ export function resolveTlsClientDownloadDir(): string {
   return join(resolveDataDir(), "tls-client", "bin");
 }
 
-export function buildNativeTlsClientOptions(): {
-  runtimeMode: "native";
-  downloadDir: string;
-} {
+export function buildNativeTlsClientOptions():
+  | {
+      runtimeMode: "native";
+      nativeLibraryPath: string;
+    }
+  | {
+      runtimeMode: "native";
+      downloadDir: string;
+    } {
+  const nativeLibraryPath = process.env.OMNIROUTE_TLS_CLIENT_NATIVE_LIBRARY_PATH?.trim();
+  if (nativeLibraryPath) {
+    return {
+      runtimeMode: "native",
+      nativeLibraryPath,
+    };
+  }
+
   return {
     runtimeMode: "native",
     downloadDir: resolveTlsClientDownloadDir(),
