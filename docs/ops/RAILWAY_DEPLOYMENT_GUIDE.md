@@ -21,7 +21,7 @@ OmniRoute 可以直接使用仓库根目录的 `Dockerfile` 部署到 Railway。
 
 在 Railway 服务的 **Variables** 中设置下面这些变量。每个值都应是你自己生成的唯一值：
 
-```env
+```dotenv
 NODE_ENV=production
 DATA_DIR=/app/data
 RAILWAY_RUN_UID=0
@@ -44,7 +44,7 @@ OMNIROUTE_ENABLE_LIVE_WS=0
 
 生成 Railway 公网域名后，如果要使用 OAuth 回调或需要固定的公开链接，再设置：
 
-```env
+```dotenv
 NEXT_PUBLIC_BASE_URL=https://<你的 Railway 域名>
 ```
 
@@ -54,7 +54,7 @@ NEXT_PUBLIC_BASE_URL=https://<你的 Railway 域名>
 
 如果要对 SQLite 中保存的 API key、token 等敏感字段启用 AES-256-GCM 加密，再增加：
 
-```env
+```dotenv
 STORAGE_ENCRYPTION_KEY=<openssl rand -hex 32>
 STORAGE_ENCRYPTION_KEY_VERSION=v1
 ```
@@ -65,7 +65,7 @@ Redis 不是启动必需项。没有 `REDIS_URL` 时，限流使用当前实例�
 
 单实例、低流量部署可以先不配 Redis。需要在应用重启后保留限流计数，或希望限流状态与进程内存解耦时，再创建 Railway Redis，并设置：
 
-```env
+```dotenv
 REDIS_URL=${{Redis.REDIS_URL}}
 ```
 

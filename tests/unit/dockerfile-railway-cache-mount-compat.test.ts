@@ -35,3 +35,16 @@ test("Railway deployment guide has the MDX frontmatter required by the docs buil
     "docs imported by the dashboard must define title, version, and lastUpdated frontmatter"
   );
 });
+
+test("Railway deployment guide uses Shiki-supported dotenv fences for env examples", () => {
+  const envFenceLines = railwayGuide
+    .split(/\r?\n/)
+    .map((line, index) => ({ line, lineNumber: index + 1 }))
+    .filter(({ line }) => /^```env\s*$/.test(line));
+
+  assert.deepEqual(
+    envFenceLines,
+    [],
+    "Shiki does not support the `env` language; use `dotenv` for environment examples"
+  );
+});
