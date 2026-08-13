@@ -12,6 +12,9 @@ import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const dockerfile = fs.readFileSync(path.join(repoRoot, "Dockerfile"), "utf-8");
+const railwayConfig = JSON.parse(fs.readFileSync(path.join(repoRoot, "railway.json"), "utf-8")) as {
+  deploy?: { healthcheckPath?: string };
+};
 const railwayGuide = fs.readFileSync(
   path.join(repoRoot, "docs", "ops", "RAILWAY_DEPLOYMENT_GUIDE.md"),
   "utf-8"
@@ -47,4 +50,14 @@ test("Railway deployment guide uses Shiki-supported dotenv fences for env exampl
     [],
     "Shiki does not support the `env` language; use `dotenv` for environment examples"
   );
+});
+
+test("Railway healthcheck uses process liveness instead of SQLite readiness", () => {
+  assert.equal(
+    railwayConfig.deploy?.healthcheckPath,
+    "/api/health/live",
+    "Railway should only require the HTTP process to be live; DB readiness remains on /api/health/ping"
+  );
+  assert.match(railwayGuide, /\/api\/health\/live/);
+  assert.match(railwayGuide, /\/api\/health\/ping/);
 });

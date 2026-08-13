@@ -79,7 +79,7 @@ REDIS_URL=${{Redis.REDIS_URL}}
 
 ## 5. 首次启动
 
-1. 等待部署通过 `/api/health/ping` 健康检查。`railway.json` 里的 `healthcheckPath` 也是这个路径。
+1. 等待部署通过 `/api/health/live` 健康检查。`railway.json` 里的 `healthcheckPath` 也是这个路径。这个路径只验证 HTTP 服务已启动；`/api/health/ping` 仍用于验证 SQLite 是否可查询。
 2. 打开 `https://<你的域名>/dashboard`。
 3. 使用 `INITIAL_PASSWORD` 登录，随后在 Dashboard 的 Security 设置中修改密码。
 4. 在 Provider Connections 中添加自己的 provider keys 或 OAuth 连接。
