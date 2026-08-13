@@ -15,7 +15,7 @@ OmniRoute 可以直接使用仓库根目录的 `Dockerfile` 部署到 Railway。
 3. 在 **Settings → Networking** 生成 Public Domain。
 4. 在 **Volumes** 添加一个持久卷，挂载路径必须是 `/app/data`。
 
-不要在 Railway 上覆盖启动命令。Dockerfile 已经使用 standalone 启动器，并会自动转发 Railway 提供的 `PORT`。
+`railway.json` 已将启动命令固定为 `/app/check-permissions.sh node /app/dev/run-standalone.mjs`，确保 Railway 覆盖镜像命令时仍会执行容器预检，并自动转发 Railway 提供的 `PORT`。如果服务设置中仍显示旧的 `node /app/run-standalone.mjs`，可以清空该手工覆盖；当前镜像也保留了兼容入口，旧设置不会再导致容器启动失败。
 
 ## 2. 必需环境变量
 

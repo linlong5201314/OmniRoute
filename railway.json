@@ -5,6 +5,7 @@
     "dockerfilePath": "Dockerfile"
   },
   "deploy": {
+    "startCommand": "/app/check-permissions.sh node /app/dev/run-standalone.mjs",
     "numReplicas": 1,
     "requiredMountPath": "/app/data",
     "healthcheckPath": "/api/health/live",

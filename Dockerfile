@@ -161,6 +161,11 @@ ENV OMNIROUTE_TLS_CLIENT_NATIVE_LIBRARY_PATH=/app/native/tls-client/libtls-clien
 # (EXTRA_MODULE_ENTRIES) for the single source of truth.
 COPY --from=builder /app/.build/next/standalone ./
 COPY --from=builder /app/native/tls-client ./native/tls-client
+# Compatibility for Railway services that still have the historical
+# `node /app/run-standalone.mjs` Start Command stored in their service settings.
+# The canonical launcher is shipped under /app/dev; keep this root delegate so
+# a stale platform override cannot crash the container before it starts listening.
+COPY --from=builder /app/scripts/build/railwayStartCompat.mjs ./run-standalone.mjs
 # better-sqlite3 is the one exception still copied explicitly: assembleStandalone
 # only syncs its native build/ dir; the JS wrapper (lib/, package.json) is left to
 # Next.js tracing. bootstrap-env requires SQLite BEFORE the standalone server
@@ -194,7 +199,7 @@ ENTRYPOINT ["/app/check-permissions.sh"]
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
   CMD ["node", "healthcheck.mjs"]
 
-CMD ["node", "dev/run-standalone.mjs"]
+CMD ["node", "/app/dev/run-standalone.mjs"]
 
 # ── Runner Web (web-cookie providers: Gemini Web, Claude Turnstile) ───────────
 #
