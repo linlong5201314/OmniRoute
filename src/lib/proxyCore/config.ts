@@ -8,8 +8,10 @@
  *
  * Instead we let mihomo consume each enabled subscription URL NATIVELY through
  * its `proxy-providers` feature: mihomo fetches the Clash/V2Ray subscription
- * itself, keeps every credential, health-checks each node, and a `url-test`
- * group auto-selects the fastest healthy node ("优先代理速度稳定").
+ * itself, keeps every credential, and health-checks each node. Traffic MATCHes
+ * a `load-balance` (round-robin) pool so concurrent account dispatches egress
+ * from DIFFERENT nodes; a `url-test` group ("优先代理速度稳定") is kept for
+ * health probing and as a single-node escape hatch.
  *
  * Pure module — takes subscription descriptors, returns a YAML string — so the
  * generated config is unit-testable without a running core.
@@ -176,13 +178,34 @@ export function buildMihomoConfig(
     "proxy-groups": [
       {
         // url-test = auto-select the lowest-latency healthy node and switch
-        // away when it degrades — the "优先代理速度稳定" behavior.
+        // away when it degrades — the "优先代理速度稳定" behavior. Kept for
+        // health probing and as a one-line escape hatch (point MATCH back at
+        // PROXY to restore single-node mode), but MATCH no longer uses it:
+        // see PROXY-POOL below.
         name: "PROXY",
         type: "url-test",
         use: providerNames,
         url: HEALTH_CHECK_URL,
         interval: NODE_HEALTH_INTERVAL_SECONDS,
         tolerance: URL_TEST_TOLERANCE_MS,
+      },
+      {
+        // load-balance + round-robin = every NEW connection goes to the next
+        // healthy node, so concurrent per-account dispatches egress from
+        // DISTINCT subscription nodes. A single url-test node pinned all
+        // traffic to one exit IP — Railway deploy log 2026-08-17 12:58 UTC:
+        // 20 opencode accounts all left through out=217.217.222.228, the
+        // upstream rate-limited that IP, and every account 429'd in one
+        // request. round-robin (not consistent-hashing/sticky-sessions):
+        // sticky keys on the destination address, and every account talks to
+        // the SAME upstream host — stickiness would collapse the pool back to
+        // one node.
+        name: "PROXY-POOL",
+        type: "load-balance",
+        strategy: "round-robin",
+        use: providerNames,
+        url: HEALTH_CHECK_URL,
+        interval: NODE_HEALTH_INTERVAL_SECONDS,
       },
     ],
 
@@ -193,9 +216,9 @@ export function buildMihomoConfig(
       // kept every provider at 0 nodes (deploy log 2026-08-17 11:00:
       // `dial PROXY (match Match/) mihomo --> update.glados-config.com:443`).
       // Fetching the subscription panels DIRECT breaks the cycle; node traffic
-      // still goes through the group via MATCH.
+      // still goes through the pool via MATCH.
       ...[...providerHosts].map((host) => `DOMAIN,${host},DIRECT`),
-      "MATCH,PROXY",
+      "MATCH,PROXY-POOL",
     ],
   };
 

@@ -93,19 +93,33 @@ describe("proxyCore config generator", () => {
     assert.ok(urls.includes("https://example.org/clash.yaml"));
   });
 
-  it("routes everything through a url-test group (speed/stability auto-select)", () => {
+  it("keeps a url-test group for health probing (speed/stability auto-select)", () => {
     const doc = yaml.load(buildMihomoConfig(subs)!) as Record<string, unknown>;
     const groups = doc["proxy-groups"] as Array<Record<string, unknown>>;
-    assert.equal(groups.length, 1);
-    assert.equal(groups[0].type, "url-test");
-    assert.ok(Array.isArray(groups[0].use) && (groups[0].use as string[]).length === 2);
-    assert.ok(Number(groups[0].tolerance) > 0);
-    // Provider hosts go DIRECT (bootstrap escape), everything else MATCH,PROXY.
+    const urlTest = groups.find((g) => g.type === "url-test");
+    assert.ok(urlTest, "url-test group must remain for health probing");
+    assert.ok(Array.isArray(urlTest.use) && (urlTest.use as string[]).length === 2);
+    assert.ok(Number(urlTest.tolerance) > 0);
+  });
+
+  it("routes MATCH through a round-robin load-balance group (per-account IP spread)", () => {
+    // Railway deploy log 2026-08-17 12:58 UTC: 20 opencode accounts all egressed
+    // through the single url-test node (out=217.217.222.228) — the upstream
+    // rate-limited that ONE IP and every account 429'd. round-robin spreads
+    // connections across subscription nodes so the account pool gets distinct
+    // exit IPs instead of sharing one.
+    const doc = yaml.load(buildMihomoConfig(subs)!) as Record<string, unknown>;
+    const groups = doc["proxy-groups"] as Array<Record<string, unknown>>;
+    const pool = groups.find((g) => g.type === "load-balance");
+    assert.ok(pool, "load-balance group must exist");
+    assert.equal(pool.strategy, "round-robin");
+    assert.ok(Array.isArray(pool.use) && (pool.use as string[]).length === 2);
+    assert.ok(Number(pool.interval) > 0, "load-balance group needs health checks");
     const rules = doc.rules as string[];
     assert.deepEqual(rules, [
       "DOMAIN,example.com,DIRECT",
       "DOMAIN,example.org,DIRECT",
-      "MATCH,PROXY",
+      "MATCH,PROXY-POOL",
     ]);
   });
 
@@ -116,7 +130,7 @@ describe("proxyCore config generator", () => {
     ];
     const doc = yaml.load(buildMihomoConfig(sameHost)!) as Record<string, unknown>;
     const rules = doc.rules as string[];
-    assert.deepEqual(rules, ["DOMAIN,panel.example,DIRECT", "MATCH,PROXY"]);
+    assert.deepEqual(rules, ["DOMAIN,panel.example,DIRECT", "MATCH,PROXY-POOL"]);
   });
 
   it("emits an explicit dns section (container 'ip version error' fix)", () => {
