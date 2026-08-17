@@ -140,6 +140,15 @@ async function cleanup(): Promise<void> {
     } catch {
       /* feature unused */
     }
+
+    // Stop the embedded proxy core (mihomo) so the child process does not leak
+    // past the server. Best-effort; no-op when the core was never started.
+    try {
+      const { stopProxyCore } = await import("@/lib/proxyCore/manager");
+      await stopProxyCore();
+    } catch {
+      /* feature unused */
+    }
   } catch (err) {
     console.error("[Shutdown] Error during cleanup:", (err as Error).message);
   }

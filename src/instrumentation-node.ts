@@ -536,12 +536,14 @@ export async function registerNodejs(): Promise<void> {
 
       // Conductor bridge (PRD Conductor RF1): mirrors OmniConductor hub tasks into the
       // A2A TaskManager via the hub SSE. Opt-in — self-gated on CONDUCTOR_HUB_URL.
-      import("@/lib/conductor/boot").then((m) => {
-        if (m.initConductorBridge()) console.log("[STARTUP] Conductor bridge started");
-      }).catch((err: unknown) => {
-        const msg = err instanceof Error ? err.message : String(err);
-        console.warn("[STARTUP] Conductor bridge failed to start (non-fatal):", msg);
-      }),
+      import("@/lib/conductor/boot")
+        .then((m) => {
+          if (m.initConductorBridge()) console.log("[STARTUP] Conductor bridge started");
+        })
+        .catch((err: unknown) => {
+          const msg = err instanceof Error ? err.message : String(err);
+          console.warn("[STARTUP] Conductor bridge failed to start (non-fatal):", msg);
+        }),
 
       // Proactive connection-cooldown recovery (#8): re-validate connections whose
       // transient `rate_limited_until` window has elapsed OUTSIDE the request hot path,
@@ -652,6 +654,29 @@ export async function registerNodejs(): Promise<void> {
         .catch((err: unknown) => {
           const msg = err instanceof Error ? err.message : String(err);
           console.warn("[STARTUP] backup schedule job failed to start (non-fatal):", msg);
+        }),
+
+      // Proxy subscription auto-refresh ticker: re-sync enabled subscriptions on
+      // their interval. Previously only armed lazily (first manual sync / opening
+      // the management UI), so a server restart left enabled subscriptions stale
+      // until someone touched the UI. Arming it at boot closes that gap.
+      import("@/lib/proxySubscription/subscriptionService")
+        .then((m) => m.startSubscriptionScheduler())
+        .catch((err: unknown) => {
+          const msg = err instanceof Error ? err.message : String(err);
+          console.warn("[STARTUP] proxy subscription scheduler failed to start (non-fatal):", msg);
+        }),
+
+      // Embedded proxy core (mihomo): translates SS/VMess/VLESS/Trojan/…
+      // subscription nodes into a loopback SOCKS5/HTTP endpoint so the
+      // subscription `localCoreEndpoint` wiring works on cloud deployments where
+      // no operator-managed core is running. Self-gated: only starts when an
+      // enabled subscription actually needs a core. Never fatal.
+      import("@/lib/proxyCore/manager")
+        .then((m) => m.startProxyCore())
+        .catch((err: unknown) => {
+          const msg = err instanceof Error ? err.message : String(err);
+          console.warn("[STARTUP] embedded proxy core failed to start (non-fatal):", msg);
         }),
 
       // Real-time dashboard WebSocket daemon (port 20132): powers Combo Studio Live,
