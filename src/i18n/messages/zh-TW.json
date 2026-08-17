@@ -6403,6 +6403,12 @@
     "proxyDocumentationTab": "檔案",
     "proxySubscriptionsTab": "訂閱",
     "proxySubscription": {
+      "coreTitle": "Local proxy core",
+      "coreStateRunning": "running",
+      "coreStateStarting": "starting",
+      "coreStateStopped": "stopped",
+      "coreReady": "ready",
+      "coreErrors": "subscription fetch errors",
       "error": {
         "LOCAL_CORE_ENDPOINT_INVALID": "本機 proxy-core 端點無效；已忽略 SS/VMess/Trojan/VLESS 節點。",
         "NEEDS_CORE_NOT_CONFIGURED": "此訂閱包含需要本機 proxy core 的節點（SS/VMess/Trojan/VLESS）；在設定本機 core SOCKS5 端點之前，這些節點不會被路由。",
@@ -12583,4 +12589,3 @@
   "capabilityFilter.structuredOutputMismatch": "提供者不支援結構化輸出",
   "capabilityFilter.contextWindowMismatch": "請求超出提供者上下文窗口"
 }
-

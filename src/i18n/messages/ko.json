@@ -6402,6 +6402,12 @@
     "proxyDocumentationTab": "문서",
     "proxySubscriptionsTab": "구독",
     "proxySubscription": {
+      "coreTitle": "Local proxy core",
+      "coreStateRunning": "running",
+      "coreStateStarting": "starting",
+      "coreStateStopped": "stopped",
+      "coreReady": "ready",
+      "coreErrors": "subscription fetch errors",
       "error": {
         "LOCAL_CORE_ENDPOINT_INVALID": "로컬 proxy-core 엔드포인트가 유효하지 않습니다. SS/VMess/Trojan/VLESS 노드가 무시되었습니다.",
         "NEEDS_CORE_NOT_CONFIGURED": "이 구독에는 로컬 프록시 코어(SS/VMess/Trojan/VLESS)가 필요한 노드가 있습니다. local-core SOCKS5 엔드포인트를 구성하기 전까지는 라우팅되지 않습니다.",
@@ -12582,4 +12588,3 @@
   "capabilityFilter.structuredOutputMismatch": "제공자가 구조화된 출력을 지원하지 않습니다",
   "capabilityFilter.contextWindowMismatch": "요청이 공급자 컨텍스트 창을 초과했습니다"
 }
-

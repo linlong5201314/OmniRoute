@@ -6402,6 +6402,12 @@
     "proxyDocumentationTab": "Nyaraka",
     "proxySubscriptionsTab": "Usajili",
     "proxySubscription": {
+      "coreTitle": "Local proxy core",
+      "coreStateRunning": "running",
+      "coreStateStarting": "starting",
+      "coreStateStopped": "stopped",
+      "coreReady": "ready",
+      "coreErrors": "subscription fetch errors",
       "error": {
         "LOCAL_CORE_ENDPOINT_INVALID": "Mwisho wa proxy-core ya ndani si halali; nodi za SS/VMess/Trojan/VLESS zilipuuzwa.",
         "NEEDS_CORE_NOT_CONFIGURED": "Usajili huu una nodi zinazohitaji proxy core ya ndani (SS/VMess/Trojan/VLESS); hazitaelekezwa hadi usanidi mwisho wa SOCKS5 wa local-core.",
@@ -12582,4 +12588,3 @@
   "capabilityFilter.structuredOutputMismatch": "Mtoa huduma haitoi matokeo yaliyoandikwa kwa muundo",
   "capabilityFilter.contextWindowMismatch": "Omba inazidi dirisha la muktadha wa mtoa huduma"
 }
-

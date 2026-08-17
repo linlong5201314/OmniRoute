@@ -2352,8 +2352,7 @@
     "providerCount": "{count} 个提供者",
     "imageToTextBridgeAvailable": "Modality Bridge 现在可以为仅文本模型描述图像。当 <code>/api/v1/images/understanding</code> 实现时，内联游乐场将可用。",
     "imageToTextBridgeCta": "在模态桥设置中配置图像→文本桥接",
-    "sttBridgeCta": "在模态桥设置中配置语音→文本桥接器"
-  ,
+    "sttBridgeCta": "在模态桥设置中配置语音→文本桥接器",
     "existingConnection": "现有连接：",
     "openrouterSttDescription": "OpenRouter 语音转文本模型使用您已配置的 OpenRouter 连接。无需单独的凭证。"
   },
@@ -6119,8 +6118,7 @@
     "anonymousFallbackDesc": "当所有配置的连接耗尽（配额、积分或到期）时，临时使用此提供者的无密钥层。关闭以跳过此提供者，而不是发送匿名请求 — 当无密钥层拒绝它们时（401）建议使用。",
     "anonymousFallbackEnabled": "为 {provider} 启用匿名回退",
     "anonymousFallbackDisabled": "已禁用 {provider} 的匿名回退 — 耗尽的连接将跳过此提供者",
-    "anonymousFallbackUpdateFailed": "无法更新匿名回退设置"
-  ,
+    "anonymousFallbackUpdateFailed": "无法更新匿名回退设置",
     "ccAliasSectionTitle": "在 Claude Code 中暴露 (claude/…)",
     "ccAliasSectionHint": "将该提供者的模型以 claude/&lt;provider&gt;/&lt;model&gt; 镜像 ID 发布，让 Claude Code 的网关模型可以发现它们。默认关闭 — 启用会使所有客户端的目录条目翻倍。",
     "ccAliasProviderLevelLabel": "提供者默认值",
@@ -6462,6 +6460,12 @@
     "proxyDocumentationTab": "文档",
     "proxySubscriptionsTab": "订阅",
     "proxySubscription": {
+      "coreTitle": "本地代理内核",
+      "coreStateRunning": "运行中",
+      "coreStateStarting": "启动中",
+      "coreStateStopped": "已停止",
+      "coreReady": "就绪",
+      "coreErrors": "订阅拉取错误",
       "error": {
         "LOCAL_CORE_ENDPOINT_INVALID": "本地代理核心端点无效；已忽略 SS/VMess/Trojan/VLESS 节点。",
         "NEEDS_CORE_NOT_CONFIGURED": "此订阅包含需要本地代理核心 (SS/VMess/Trojan/VLESS) 的节点；在配置本地核心 SOCKS5 端点之前，它们不会被路由。",
@@ -12659,8 +12663,7 @@
   "capabilityFilter.visionMismatch": "提供者不支持此图像请求的视觉效果",
   "capabilityFilter.toolsMismatch": "提供者不支持工具调用",
   "capabilityFilter.structuredOutputMismatch": "提供者不支持结构化输出",
-  "capabilityFilter.contextWindowMismatch": "请求超出提供者上下文窗口"
-  ,
+  "capabilityFilter.contextWindowMismatch": "请求超出提供者上下文窗口",
   "cliproxyProviderExposure": {
     "title": "提供者暴露",
     "description": "将 CLIProxyAPI 模型以 <prefix>cliproxyapi/</prefix> 前缀暴露为路由目标。",
@@ -12670,4 +12673,3 @@
     "networkError": "网络错误 — 无法更新提供者暴露设置"
   }
 }
-

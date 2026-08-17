@@ -6402,6 +6402,12 @@
     "proxyDocumentationTab": "دستاویزات",
     "proxySubscriptionsTab": "سبسکرپشنز",
     "proxySubscription": {
+      "coreTitle": "Local proxy core",
+      "coreStateRunning": "running",
+      "coreStateStarting": "starting",
+      "coreStateStopped": "stopped",
+      "coreReady": "ready",
+      "coreErrors": "subscription fetch errors",
       "error": {
         "LOCAL_CORE_ENDPOINT_INVALID": "لوکل proxy-core اینڈ پوائنٹ غلط ہے؛ SS/VMess/Trojan/VLESS نوڈز کو نظر انداز کر دیا گیا۔",
         "NEEDS_CORE_NOT_CONFIGURED": "اس سبسکرپشن میں ایسے نوڈز ہیں جنہیں لوکل پراکسی کور (SS/VMess/Trojan/VLESS) کی ضرورت ہے؛ جب تک آپ local-core SOCKS5 اینڈ پوائنٹ کنفیگر نہیں کرتے، انہیں روٹ نہیں کیا جائے گا۔",
@@ -12582,4 +12588,3 @@
   "capabilityFilter.structuredOutputMismatch": "پرووائیڈر ساختی آؤٹ پٹ کی حمایت نہیں کرتا",
   "capabilityFilter.contextWindowMismatch": "درخواست فراہم کنندہ کے سیاق و سباق کی ونڈو سے تجاوز کر گئی ہے"
 }
-

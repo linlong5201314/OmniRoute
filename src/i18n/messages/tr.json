@@ -6402,6 +6402,12 @@
     "proxyDocumentationTab": "Dokümantasyon",
     "proxySubscriptionsTab": "Abonelikler",
     "proxySubscription": {
+      "coreTitle": "Local proxy core",
+      "coreStateRunning": "running",
+      "coreStateStarting": "starting",
+      "coreStateStopped": "stopped",
+      "coreReady": "ready",
+      "coreErrors": "subscription fetch errors",
       "error": {
         "LOCAL_CORE_ENDPOINT_INVALID": "Yerel proxy çekirdeği uç noktası geçersiz; SS/VMess/Trojan/VLESS düğümleri yoksayıldı.",
         "NEEDS_CORE_NOT_CONFIGURED": "Bu abonelikte yerel bir proxy çekirdeğine (SS/VMess/Trojan/VLESS) ihtiyaç duyan düğümler var; yerel çekirdek SOCKS5 uç noktasını yapılandırana kadar bunlar yönlendirilmez.",
@@ -12582,4 +12588,3 @@
   "capabilityFilter.structuredOutputMismatch": "Sağlayıcı yapılandırılmış çıktıyı desteklemiyor",
   "capabilityFilter.contextWindowMismatch": "Talep sağlayıcı bağlam penceresini aşıyor"
 }
-

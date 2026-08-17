@@ -54,6 +54,15 @@ describe("OpenCode DeepSeek json_schema fallback", () => {
 
     assert.match(system.content, /strictly follows this JSON schema/i);
 
+    // The injected prompt must use REAL newlines. The original #9992 upstream
+    // port wrote "\\n" (literal backslash-n) — a malformed prompt the model
+    // still mostly understood, but which corrupted the schema fence layout.
+    assert.ok(system.content.includes("\n"), "prompt must contain real newline characters");
+    assert.ok(
+      !system.content.includes("\\n"),
+      "prompt must not contain literal backslash-n sequences"
+    );
+
     assert.match(system.content, /"ok"/);
 
     assert.equal(

@@ -6402,6 +6402,12 @@
     "proxyDocumentationTab": "الوثائق",
     "proxySubscriptionsTab": "الاشتراكات",
     "proxySubscription": {
+      "coreTitle": "Local proxy core",
+      "coreStateRunning": "running",
+      "coreStateStarting": "starting",
+      "coreStateStopped": "stopped",
+      "coreReady": "ready",
+      "coreErrors": "subscription fetch errors",
       "error": {
         "LOCAL_CORE_ENDPOINT_INVALID": "نقطة نهاية نواة الوكيل المحلي غير صالحة؛ تم تجاهل عقد SS/VMess/Trojan/VLESS.",
         "NEEDS_CORE_NOT_CONFIGURED": "يحتوي هذا الاشتراك على عقد تحتاج إلى نواة وكيل محلي (SS/VMess/Trojan/VLESS)؛ لن يتم توجيهها حتى تقوم بتكوين نقطة نهاية SOCKS5 للنواة المحلية.",
@@ -12582,4 +12588,3 @@
   "capabilityFilter.structuredOutputMismatch": "المزود لا يدعم الإخراج المنظم",
   "capabilityFilter.contextWindowMismatch": "تجاوز الطلب نافذة سياق المزود"
 }
-

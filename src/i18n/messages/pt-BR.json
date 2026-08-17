@@ -6638,6 +6638,12 @@
     "proxyDocumentationTab": "Documentação",
     "proxySubscriptionsTab": "Assinaturas",
     "proxySubscription": {
+      "coreTitle": "Local proxy core",
+      "coreStateRunning": "running",
+      "coreStateStarting": "starting",
+      "coreStateStopped": "stopped",
+      "coreReady": "ready",
+      "coreErrors": "subscription fetch errors",
       "error": {
         "LOCAL_CORE_ENDPOINT_INVALID": "O endpoint do core local é inválido; nós SS/VMess/Trojan/VLESS foram ignorados.",
         "NEEDS_CORE_NOT_CONFIGURED": "Esta assinatura tem nós que precisam de um core local (SS/VMess/Trojan/VLESS); eles não são roteados até você configurar o endpoint SOCKS5 do core local.",

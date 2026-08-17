@@ -6402,6 +6402,12 @@
     "proxyDocumentationTab": "Dokumentaatio",
     "proxySubscriptionsTab": "Tilaukset",
     "proxySubscription": {
+      "coreTitle": "Local proxy core",
+      "coreStateRunning": "running",
+      "coreStateStarting": "starting",
+      "coreStateStopped": "stopped",
+      "coreReady": "ready",
+      "coreErrors": "subscription fetch errors",
       "error": {
         "LOCAL_CORE_ENDPOINT_INVALID": "Paikallinen välityspalvelinytimen päätepiste on virheellinen; SS/VMess/Trojan/VLESS-solmut ohitettiin.",
         "NEEDS_CORE_NOT_CONFIGURED": "Tässä tilauksessa on solmuja, jotka tarvitsevat paikallisen välityspalvelinytimen (SS/VMess/Trojan/VLESS); niitä ei reititetä ennen kuin määrität paikallisen ytimen SOCKS5-päätepisteen.",
@@ -12582,4 +12588,3 @@
   "capabilityFilter.structuredOutputMismatch": "Palveluntarjoaja ei tue jäsenneltyä tulostusta",
   "capabilityFilter.contextWindowMismatch": "Pyyntö ylittää tarjoajan kontekstin ikkunan"
 }
-

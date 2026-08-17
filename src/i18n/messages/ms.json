@@ -6402,6 +6402,12 @@
     "proxyDocumentationTab": "Dokumentasi",
     "proxySubscriptionsTab": "Langganan",
     "proxySubscription": {
+      "coreTitle": "Local proxy core",
+      "coreStateRunning": "running",
+      "coreStateStarting": "starting",
+      "coreStateStopped": "stopped",
+      "coreReady": "ready",
+      "coreErrors": "subscription fetch errors",
       "error": {
         "LOCAL_CORE_ENDPOINT_INVALID": "Titik akhir teras proksi tempatan tidak sah; nod SS/VMess/Trojan/VLESS telah diabaikan.",
         "NEEDS_CORE_NOT_CONFIGURED": "Langganan ini mempunyai nod yang memerlukan teras proksi tempatan (SS/VMess/Trojan/VLESS); nod tersebut tidak dihalakan sehingga anda mengkonfigurasi titik akhir SOCKS5 teras tempatan.",
@@ -12582,4 +12588,3 @@
   "capabilityFilter.structuredOutputMismatch": "Penyedia tidak menyokong output berstruktur",
   "capabilityFilter.contextWindowMismatch": "Permintaan melebihi tetingkap konteks penyedia"
 }
-

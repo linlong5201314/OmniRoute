@@ -6402,6 +6402,12 @@
     "proxyDocumentationTab": "दस्तऐवजीकरण",
     "proxySubscriptionsTab": "सदस्यता",
     "proxySubscription": {
+      "coreTitle": "Local proxy core",
+      "coreStateRunning": "running",
+      "coreStateStarting": "starting",
+      "coreStateStopped": "stopped",
+      "coreReady": "ready",
+      "coreErrors": "subscription fetch errors",
       "error": {
         "LOCAL_CORE_ENDPOINT_INVALID": "स्थानिक proxy-core endpoint अवैध आहे; SS/VMess/Trojan/VLESS नोड्स दुर्लक्षित केले गेले.",
         "NEEDS_CORE_NOT_CONFIGURED": "या सदस्यतेमध्ये असे नोड्स आहेत ज्यांना स्थानिक proxy core (SS/VMess/Trojan/VLESS) ची आवश्यकता आहे; जोपर्यंत तुम्ही local-core SOCKS5 endpoint कॉन्फिगर करत नाही तोपर्यंत ते रूट केले जात नाहीत.",
@@ -12582,4 +12588,3 @@
   "capabilityFilter.structuredOutputMismatch": "प्रदायक संरचित आउटपुटला समर्थन करत नाही",
   "capabilityFilter.contextWindowMismatch": "विनंती प्रदाता संदर्भ विंडो ओलांडते"
 }
-

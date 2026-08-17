@@ -6402,6 +6402,12 @@
     "proxyDocumentationTab": "Dokumentáció",
     "proxySubscriptionsTab": "Előfizetések",
     "proxySubscription": {
+      "coreTitle": "Local proxy core",
+      "coreStateRunning": "running",
+      "coreStateStarting": "starting",
+      "coreStateStopped": "stopped",
+      "coreReady": "ready",
+      "coreErrors": "subscription fetch errors",
       "error": {
         "LOCAL_CORE_ENDPOINT_INVALID": "A helyi proxy-core végpont érvénytelen; az SS/VMess/Trojan/VLESS csomópontok figyelmen kívül lettek hagyva.",
         "NEEDS_CORE_NOT_CONFIGURED": "Ez az előfizetés olyan csomópontokat tartalmaz, amelyeknek helyi proxy-core-ra (SS/VMess/Trojan/VLESS) van szükségük; ezek nincsenek irányítva, amíg be nem állítja a helyi core SOCKS5 végpontot.",
@@ -12582,4 +12588,3 @@
   "capabilityFilter.structuredOutputMismatch": "A szolgáltató nem támogatja a strukturált kimenetet",
   "capabilityFilter.contextWindowMismatch": "A kérés meghaladja a szolgáltató kontextusablakát"
 }
-

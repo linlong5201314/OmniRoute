@@ -6402,6 +6402,12 @@
     "proxyDocumentationTab": "ஆவணங்கள்",
     "proxySubscriptionsTab": "சந்தாக்கள்",
     "proxySubscription": {
+      "coreTitle": "Local proxy core",
+      "coreStateRunning": "running",
+      "coreStateStarting": "starting",
+      "coreStateStopped": "stopped",
+      "coreReady": "ready",
+      "coreErrors": "subscription fetch errors",
       "error": {
         "LOCAL_CORE_ENDPOINT_INVALID": "உள்ளூர் proxy-core எண்ட்பாயிண்ட் செல்லாதது; SS/VMess/Trojan/VLESS முனைகள் புறக்கணிக்கப்பட்டன.",
         "NEEDS_CORE_NOT_CONFIGURED": "இந்த சந்தாவில் உள்ளூர் proxy core (SS/VMess/Trojan/VLESS) தேவைப்படும் முனைகள் உள்ளன; நீங்கள் local-core SOCKS5 எண்ட்பாயிண்ட்டை உள்ளமைக்கும் வரை அவை வழிநடத்தப்படாது.",
@@ -12582,4 +12588,3 @@
   "capabilityFilter.structuredOutputMismatch": "சேவையாளர் கட்டமைக்கப்பட்ட வெளியீட்டை ஆதரிக்கவில்லை",
   "capabilityFilter.contextWindowMismatch": "விண்ணப்பம் வழங்குநர் சூழல் ஜன்னலை மீறுகிறது"
 }
-

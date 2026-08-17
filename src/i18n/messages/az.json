@@ -6402,6 +6402,12 @@
     "proxyDocumentationTab": "Sənədləşmə",
     "proxySubscriptionsTab": "Abunəliklər",
     "proxySubscription": {
+      "coreTitle": "Local proxy core",
+      "coreStateRunning": "running",
+      "coreStateStarting": "starting",
+      "coreStateStopped": "stopped",
+      "coreReady": "ready",
+      "coreErrors": "subscription fetch errors",
       "error": {
         "LOCAL_CORE_ENDPOINT_INVALID": "Yerli proksi-nüvə son nöqtəsi keçərsizdir; SS/VMess/Trojan/VLESS qovşaqlarına məhəl qoyulmadı.",
         "NEEDS_CORE_NOT_CONFIGURED": "Bu abunəlikdə yerli proksi-nüvəyə (SS/VMess/Trojan/VLESS) ehtiyacı olan qovşaqlar var; yerli nüvənin SOCKS5 son nöqtəsini konfiqurasiya edənə qədər onlar yönləndirilməyəcək.",
@@ -12582,4 +12588,3 @@
   "capabilityFilter.structuredOutputMismatch": "Təchizatçı strukturlaşdırılmış çıxışı dəstəkləmir",
   "capabilityFilter.contextWindowMismatch": "Sorğu təminatçının kontekst pəncərəsini aşır"
 }
-

@@ -6402,6 +6402,12 @@
     "proxyDocumentationTab": "Documentação",
     "proxySubscriptionsTab": "Subscrições",
     "proxySubscription": {
+      "coreTitle": "Local proxy core",
+      "coreStateRunning": "running",
+      "coreStateStarting": "starting",
+      "coreStateStopped": "stopped",
+      "coreReady": "ready",
+      "coreErrors": "subscription fetch errors",
       "error": {
         "LOCAL_CORE_ENDPOINT_INVALID": "O endpoint do proxy-core local é inválido; os nós SS/VMess/Trojan/VLESS foram ignorados.",
         "NEEDS_CORE_NOT_CONFIGURED": "Esta subscrição tem nós que necessitam de um núcleo de proxy local (SS/VMess/Trojan/VLESS); não serão encaminhados até configurar o endpoint SOCKS5 do núcleo local.",
@@ -12582,4 +12588,3 @@
   "capabilityFilter.structuredOutputMismatch": "O fornecedor não suporta saída estruturada",
   "capabilityFilter.contextWindowMismatch": "A solicitação excede a janela de contexto do fornecedor"
 }
-

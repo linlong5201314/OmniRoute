@@ -6402,6 +6402,12 @@
     "proxyDocumentationTab": "Dokumentation",
     "proxySubscriptionsTab": "Prenumerationer",
     "proxySubscription": {
+      "coreTitle": "Local proxy core",
+      "coreStateRunning": "running",
+      "coreStateStarting": "starting",
+      "coreStateStopped": "stopped",
+      "coreReady": "ready",
+      "coreErrors": "subscription fetch errors",
       "error": {
         "LOCAL_CORE_ENDPOINT_INVALID": "Lokal proxy-core-slutpunkt är ogiltig; SS/VMess/Trojan/VLESS-noder ignorerades.",
         "NEEDS_CORE_NOT_CONFIGURED": "Denna prenumeration har noder som behöver en lokal proxy-core (SS/VMess/Trojan/VLESS); de dirigeras inte förrän du konfigurerar local-core SOCKS5-slutpunkten.",
@@ -12582,4 +12588,3 @@
   "capabilityFilter.structuredOutputMismatch": "Leverantören stöder inte strukturerad utdata",
   "capabilityFilter.contextWindowMismatch": "Begäran överskrider leverantörens kontextfönster"
 }
-

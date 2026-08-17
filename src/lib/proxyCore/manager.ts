@@ -72,6 +72,8 @@ interface CoreRuntime {
   child: ChildProcess;
   startedAt: number;
   stopping: boolean;
+  /** True once the mixed port completed a SOCKS5 handshake (real readiness). */
+  ready: boolean;
 }
 
 let runtime: CoreRuntime | null = null;
@@ -81,6 +83,8 @@ let gaveUp = false;
 let currentConfigYaml: string | null = null;
 let currentPort = CORE_MIXED_PORT;
 let startInFlight: Promise<void> | null = null;
+/** Ring buffer of the last mihomo provider errors (for status/diagnostics). */
+const providerErrors: Array<{ at: string; message: string }> = [];
 
 function coreDir(): string {
   return path.join(DATA_DIR, "proxy-core");
@@ -152,6 +156,34 @@ async function collectCoreSubscriptions(): Promise<CoreSubscription[]> {
   return subs
     .filter((s) => s.enabled && subscriptionNeedsCore(s))
     .map((s) => ({ id: s.id, name: s.name, url: s.url }));
+}
+
+/**
+ * The container's own nameservers, read from /etc/resolv.conf — the exact
+ * resolvers the Node process resolves through successfully (deploy log
+ * 2026-08-17: Node fetched the mihomo binary from GitHub while mihomo's own
+ * DNS died with "ip version error"). Injecting them first into every mihomo
+ * DNS list makes the core resolve exactly like the app around it. Cached for
+ * the process lifetime; returns [] where no resolv.conf exists (Windows dev).
+ */
+let platformNameserversCache: string[] | null = null;
+
+function readPlatformNameservers(): string[] {
+  if (platformNameserversCache) return platformNameserversCache;
+  const found: string[] = [];
+  try {
+    const text = fs.readFileSync("/etc/resolv.conf", "utf8");
+    for (const line of text.split("\n")) {
+      const match = /^\s*nameserver\s+(\S+)/.exec(line);
+      if (match && net.isIP(match[1]) > 0) found.push(match[1]);
+      if (found.length >= 3) break;
+    }
+  } catch {
+    // no resolv.conf (Windows) — the config falls back to public resolvers
+  }
+  platformNameserversCache = found;
+  if (found.length > 0) log(`platform nameservers from /etc/resolv.conf: ${found.join(", ")}`);
+  return found;
 }
 
 // ─────────────────────────── Binary management ───────────────────────────
@@ -228,6 +260,53 @@ function isPortListening(port: number): Promise<boolean> {
   });
 }
 
+/**
+ * True SOCKS5 readiness check: complete the no-auth method negotiation
+ * (\x05\x01\x00 → \x05\x00). A bare TCP connect (fast-fail probe) succeeds the
+ * instant mihomo binds the port — while providers may still be loading and the
+ * PROXY group is empty. The handshake proves the SOCKS endpoint actually
+ * answers, and the poll loop gives providers time to load before we declare
+ * the core "starting".
+ */
+function socks5Handshake(port: number, timeoutMs = 2000): Promise<boolean> {
+  return new Promise((resolve) => {
+    const socket = net.connect({ host: "127.0.0.1", port, timeout: timeoutMs });
+    let done = false;
+    const finish = (ok: boolean) => {
+      if (done) return;
+      done = true;
+      socket.destroy();
+      resolve(ok);
+    };
+    socket.once("connect", () => {
+      socket.write(Buffer.from([0x05, 0x01, 0x00]));
+    });
+    socket.once("data", (chunk: Buffer) => {
+      finish(chunk.length >= 2 && chunk[0] === 0x05);
+    });
+    socket.once("error", () => finish(false));
+    socket.once("timeout", () => finish(false));
+  });
+}
+
+/** Poll the mixed port until the SOCKS5 handshake succeeds (or timeout). */
+async function waitForCoreReady(child: ChildProcess, port: number): Promise<void> {
+  const deadline = Date.now() + 60_000;
+  log(`waiting for the mixed listener to accept SOCKS5 on 127.0.0.1:${port}…`);
+  while (Date.now() < deadline) {
+    if (runtime?.child !== child) return; // restarted/stopped under us
+    if (await socks5Handshake(port)) {
+      if (runtime?.child === child) runtime.ready = true;
+      log(`ready — SOCKS5 handshake OK on 127.0.0.1:${port}`);
+      return;
+    }
+    await new Promise((r) => setTimeout(r, 1000));
+  }
+  warn(
+    `core did not complete a SOCKS5 handshake within 60s on port ${port} — requests may fail while it is still starting`
+  );
+}
+
 function spawnCore(bin: string, port: number): void {
   let child: ChildProcess;
   try {
@@ -243,7 +322,7 @@ function spawnCore(bin: string, port: number): void {
     return;
   }
 
-  runtime = { child, startedAt: Date.now(), stopping: false };
+  runtime = { child, startedAt: Date.now(), stopping: false, ready: false };
 
   const pipeLines = (stream: NodeJS.ReadableStream, level: "out" | "err") => {
     let buffer = "";
@@ -253,7 +332,23 @@ function spawnCore(bin: string, port: number): void {
       buffer = lines.pop() ?? "";
       for (const line of lines) {
         const trimmed = line.trim();
-        if (trimmed) console.log(`${LOG_TAG} [mihomo:${level}] ${trimmed.slice(0, 500)}`);
+        if (!trimmed) continue;
+        console.log(`${LOG_TAG} [mihomo:${level}] ${trimmed.slice(0, 500)}`);
+        // Provider fetch failures decide whether the PROXY group ever gets
+        // nodes; dial-level DNS failures ("ip version error") were the root
+        // cause of the 2026-08-17 Railway outage — keep the last few of both
+        // for the status endpoint/diagnostics.
+        if (
+          /provider .*(error|failed)/i.test(trimmed) ||
+          /initial proxy provider .* error/i.test(trimmed) ||
+          /dns resolve failed/i.test(trimmed)
+        ) {
+          providerErrors.push({
+            at: new Date().toISOString(),
+            message: trimmed.slice(0, 300),
+          });
+          if (providerErrors.length > 10) providerErrors.shift();
+        }
       }
     });
   };
@@ -277,6 +372,7 @@ function spawnCore(bin: string, port: number): void {
   });
 
   log(`mihomo started (pid ${child.pid ?? "?"}, mixed listener 127.0.0.1:${port})`);
+  void waitForCoreReady(child, port);
 }
 
 function handleCrash(err: Error, startedAt: number): void {
@@ -345,7 +441,7 @@ export async function startProxyCore(): Promise<void> {
         return; // nothing needs the core — stay out of the way
       }
       const port = resolveCorePort(await listSubscriptions());
-      const configYaml = buildMihomoConfig(subs, port);
+      const configYaml = buildMihomoConfig(subs, port, readPlatformNameservers());
       if (!configYaml) return;
 
       if (runtime) {
@@ -382,7 +478,7 @@ export async function refreshProxyCore(): Promise<void> {
   try {
     const subs = await collectCoreSubscriptions();
     const port = resolveCorePort(await listSubscriptions());
-    const configYaml = buildMihomoConfig(subs, port);
+    const configYaml = buildMihomoConfig(subs, port, readPlatformNameservers());
 
     if (!configYaml) {
       // No subscription needs the core anymore — stop it.
@@ -459,19 +555,23 @@ export async function stopProxyCore(): Promise<void> {
   log("mihomo stopped");
 }
 
-/** Status snapshot (for diagnostics/tests). */
+/** Status snapshot (for diagnostics/tests and the dashboard status card). */
 export function getProxyCoreStatus(): {
   running: boolean;
+  ready: boolean;
   pid: number | null;
   port: number;
   version: string;
   gaveUp: boolean;
+  providerErrors: Array<{ at: string; message: string }>;
 } {
   return {
     running: runtime !== null,
+    ready: runtime?.ready ?? false,
     pid: runtime?.child.pid ?? null,
     port: currentPort,
     version: MIHOMO_VERSION,
     gaveUp,
+    providerErrors: [...providerErrors],
   };
 }

@@ -94,10 +94,11 @@ describe("OpencodeExecutor proxy-error rotation (stability)", () => {
 
   /**
    * Fetch stub whose behavior is decided per-call by `behavior(callIdx)` —
-   * either "throw" (network error) or an HTTP status. Records the proxy port
-   * each dispatch resolved to so tests can assert the egress path.
+   * either "throw" (network error), "unreachable" (PROXY_UNREACHABLE), or an
+   * HTTP status. Records the proxy port each dispatch resolved to so tests can
+   * assert the egress path.
    */
-  function installFetchStub(behavior: (callIdx: number) => "throw" | number) {
+  function installFetchStub(behavior: (callIdx: number) => "throw" | "unreachable" | number) {
     let call = 0;
     globalThis.fetch = (async (input: unknown) => {
       const url =
@@ -115,6 +116,11 @@ describe("OpencodeExecutor proxy-error rotation (stability)", () => {
       if (action === "throw") {
         throw Object.assign(new Error("connect ECONNREFUSED 127.0.0.1"), {
           code: "ECONNREFUSED",
+        });
+      }
+      if (action === "unreachable") {
+        throw Object.assign(new Error("[Proxy Fast-Fail] Proxy unreachable"), {
+          code: "PROXY_UNREACHABLE",
         });
       }
       return new Response(JSON.stringify({ ok: action === 200 }), {
@@ -174,5 +180,57 @@ describe("OpencodeExecutor proxy-error rotation (stability)", () => {
       },
       "the network error must surface instead of a direct-egress fallback"
     );
+  });
+
+  it("fail-fasts on PROXY_UNREACHABLE when every account shares the same dead proxy", async () => {
+    // Railway 2026-08-17: all 20 accounts egress through one global
+    // socks5://127.0.0.1:2080 subscription proxy; when it is dead, the rotation
+    // burned the entire pool (~5ms per account) and polluted every cooldown.
+    const shared = {
+      apiKey: null,
+      accessToken: null,
+      connectionId: "noauth",
+      providerSpecificData: {
+        fingerprints: [ACCOUNT_A, ACCOUNT_B],
+        accountProxies: [
+          { fingerprint: ACCOUNT_A, proxy: { type: "http", host: "127.0.0.1", port: portA } },
+          { fingerprint: ACCOUNT_B, proxy: { type: "http", host: "127.0.0.1", port: portA } },
+        ],
+      },
+    } as unknown as ProviderCredentials;
+
+    const exec = new OpencodeExecutor("opencode-zen");
+    installFetchStub(() => "unreachable");
+
+    await assert.rejects(
+      () => exec.execute({ ...executeInput(), credentials: shared }),
+      (err: unknown) => {
+        const e = err as { code?: string };
+        return e?.code === "PROXY_UNREACHABLE";
+      },
+      "the proxy-level error must surface"
+    );
+
+    assert.equal(
+      observed.length,
+      1,
+      `accounts sharing the dead proxy must be skipped after one dispatch, dispatches=${JSON.stringify(observed)}`
+    );
+  });
+
+  it("still rotates on PROXY_UNREACHABLE when the next account has a different proxy", async () => {
+    const exec = new OpencodeExecutor("opencode-zen");
+    // A's proxy unreachable → B's proxy (different endpoint) answers 200.
+    installFetchStub((i) => (i === 0 ? "unreachable" : 200));
+
+    const result = await exec.execute(executeInput());
+
+    assert.strictEqual((result as { response: Response }).response.status, 200);
+    assert.equal(
+      observed.length,
+      2,
+      `must dispatch exactly once per distinct proxy, dispatches=${JSON.stringify(observed)}`
+    );
+    assert.notStrictEqual(observed[0], observed[1], "the rotation must switch to B's proxy");
   });
 });

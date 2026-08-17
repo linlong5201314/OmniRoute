@@ -6402,6 +6402,12 @@
     "proxyDocumentationTab": "תיעוד",
     "proxySubscriptionsTab": "מנויים",
     "proxySubscription": {
+      "coreTitle": "Local proxy core",
+      "coreStateRunning": "running",
+      "coreStateStarting": "starting",
+      "coreStateStopped": "stopped",
+      "coreReady": "ready",
+      "coreErrors": "subscription fetch errors",
       "error": {
         "LOCAL_CORE_ENDPOINT_INVALID": "נקודת הקצה המקומית של proxy-core אינה תקינה; המערכת התעלמה מצומתי SS/VMess/Trojan/VLESS.",
         "NEEDS_CORE_NOT_CONFIGURED": "במנוי זה ישנם צמתים הזקוקים לליבת פרוקסי מקומית (SS/VMess/Trojan/VLESS); הם לא ינותבו עד שתגדיר את נקודת הקצה SOCKS5 של הליבה המקומית.",
@@ -12582,4 +12588,3 @@
   "capabilityFilter.structuredOutputMismatch": "הספק אינו תומך בפלט מובנה",
   "capabilityFilter.contextWindowMismatch": "הבקשה חורגת מגבול ההקשר של הספק"
 }
-

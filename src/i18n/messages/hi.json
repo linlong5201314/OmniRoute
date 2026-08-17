@@ -6402,6 +6402,12 @@
     "proxyDocumentationTab": "डॉक्यूमेंटेशन",
     "proxySubscriptionsTab": "सदस्यताएँ",
     "proxySubscription": {
+      "coreTitle": "Local proxy core",
+      "coreStateRunning": "running",
+      "coreStateStarting": "starting",
+      "coreStateStopped": "stopped",
+      "coreReady": "ready",
+      "coreErrors": "subscription fetch errors",
       "error": {
         "LOCAL_CORE_ENDPOINT_INVALID": "स्थानीय प्रॉक्सी-कोर एंडपॉइंट अमान्य है; SS/VMess/Trojan/VLESS नोड्स को अनदेखा कर दिया गया।",
         "NEEDS_CORE_NOT_CONFIGURED": "इस सदस्यता में ऐसे नोड्स हैं जिन्हें स्थानीय प्रॉक्सी कोर (SS/VMess/Trojan/VLESS) की आवश्यकता है; जब तक आप स्थानीय-कोर SOCKS5 एंडपॉइंट को कॉन्फ़िगर नहीं करते, तब तक उन्हें रूट नहीं किया जाएगा।",
@@ -12582,4 +12588,3 @@
   "capabilityFilter.structuredOutputMismatch": "प्रदाता संरचित आउटपुट का समर्थन नहीं करता",
   "capabilityFilter.contextWindowMismatch": "अनुरोध प्रदाता संदर्भ विंडो से अधिक है"
 }
-

@@ -6402,6 +6402,12 @@
     "proxyDocumentationTab": "เอกสารประกอบ",
     "proxySubscriptionsTab": "การสมัครสมาชิก",
     "proxySubscription": {
+      "coreTitle": "Local proxy core",
+      "coreStateRunning": "running",
+      "coreStateStarting": "starting",
+      "coreStateStopped": "stopped",
+      "coreReady": "ready",
+      "coreErrors": "subscription fetch errors",
       "error": {
         "LOCAL_CORE_ENDPOINT_INVALID": "ปลายทาง proxy-core ภายในเครื่องไม่ถูกต้อง; โหนด SS/VMess/Trojan/VLESS ถูกละเว้น",
         "NEEDS_CORE_NOT_CONFIGURED": "การสมัครสมาชิกนี้มีโหนดที่ต้องใช้ proxy core ภายในเครื่อง (SS/VMess/Trojan/VLESS); โหนดเหล่านั้นจะไม่ถูกกำหนดเส้นทางจนกว่าคุณจะกำหนดค่าปลายทาง SOCKS5 ของ local-core",
@@ -12582,4 +12588,3 @@
   "capabilityFilter.structuredOutputMismatch": "ผู้ให้บริการไม่รองรับการส่งออกแบบมีโครงสร้าง",
   "capabilityFilter.contextWindowMismatch": "คำขอเกินขอบเขตบริบทของผู้ให้บริการ"
 }
-

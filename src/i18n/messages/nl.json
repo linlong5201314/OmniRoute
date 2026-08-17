@@ -6402,6 +6402,12 @@
     "proxyDocumentationTab": "Documentatie",
     "proxySubscriptionsTab": "Abonnementen",
     "proxySubscription": {
+      "coreTitle": "Local proxy core",
+      "coreStateRunning": "running",
+      "coreStateStarting": "starting",
+      "coreStateStopped": "stopped",
+      "coreReady": "ready",
+      "coreErrors": "subscription fetch errors",
       "error": {
         "LOCAL_CORE_ENDPOINT_INVALID": "Lokaal proxy-core-eindpunt is ongeldig; SS/VMess/Trojan/VLESS-nodes zijn genegeerd.",
         "NEEDS_CORE_NOT_CONFIGURED": "Dit abonnement bevat nodes die een lokale proxy-core vereisen (SS/VMess/Trojan/VLESS); ze worden niet gerouteerd totdat u het SOCKS5-eindpunt van de lokale core configureert.",
@@ -12582,4 +12588,3 @@
   "capabilityFilter.structuredOutputMismatch": "Provider ondersteunt geen gestructureerde uitvoer",
   "capabilityFilter.contextWindowMismatch": "Verzoek overschrijdt de contextvenster van de provider"
 }
-

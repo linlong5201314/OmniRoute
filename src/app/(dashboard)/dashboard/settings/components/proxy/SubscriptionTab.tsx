@@ -28,6 +28,17 @@ interface ProviderOption {
   provider: string;
 }
 
+/** Embedded mihomo core status snapshot (GET /proxy-subscriptions `core`). */
+interface CoreStatus {
+  running: boolean;
+  ready: boolean;
+  pid: number | null;
+  port: number;
+  version: string;
+  gaveUp: boolean;
+  providerErrors: Array<{ at: string; message: string }>;
+}
+
 type FormState = {
   name: string;
   url: string;
@@ -51,6 +62,7 @@ const EMPTY_FORM: FormState = {
 export default function SubscriptionTab() {
   const [subs, setSubs] = useState<SubscriptionRecord[]>([]);
   const [providers, setProviders] = useState<ProviderOption[]>([]);
+  const [core, setCore] = useState<CoreStatus | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -91,6 +103,7 @@ export default function SubscriptionTab() {
       if (!res.ok) throw new Error(t("proxySubscription.loadFailed"));
       const data = await res.json();
       setSubs(Array.isArray(data.items) ? data.items : []);
+      setCore(data.core ?? null);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -252,6 +265,57 @@ export default function SubscriptionTab() {
       {error && (
         <div className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-600">
           {error}
+        </div>
+      )}
+
+      {(core?.running || subs.some((s) => s.localCoreEndpoint)) && core && (
+        <div
+          className={`rounded-lg border px-3 py-2 text-sm ${
+            core.running && core.ready
+              ? "border-green-500/30 bg-green-500/5"
+              : core.running
+                ? "border-yellow-500/30 bg-yellow-500/5"
+                : "border-border bg-surface"
+          }`}
+        >
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-medium">{t("proxySubscription.coreTitle")}</span>
+            <span
+              className={
+                core.running && core.ready
+                  ? "text-green-600"
+                  : core.running
+                    ? "text-yellow-600"
+                    : "text-text-muted"
+              }
+            >
+              {core.running
+                ? core.ready
+                  ? t("proxySubscription.coreStateRunning")
+                  : t("proxySubscription.coreStateStarting")
+                : t("proxySubscription.coreStateStopped")}
+            </span>
+            {core.running && core.ready && (
+              <span className="text-xs text-green-600">{t("proxySubscription.coreReady")}</span>
+            )}
+            <span className="text-xs text-text-muted">
+              127.0.0.1:{core.port} · mihomo {core.version}
+              {core.pid ? ` · pid ${core.pid}` : ""}
+            </span>
+            {core.providerErrors.length > 0 && (
+              <span className="text-xs text-red-600">
+                {t("proxySubscription.coreErrors")}: {core.providerErrors.length}
+              </span>
+            )}
+          </div>
+          {core.providerErrors.length > 0 && (
+            <div
+              className="mt-1 truncate text-xs text-red-600"
+              title={core.providerErrors.map((e) => e.message).join("\n")}
+            >
+              {core.providerErrors[core.providerErrors.length - 1]?.message}
+            </div>
+          )}
         </div>
       )}
 

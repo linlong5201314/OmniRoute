@@ -8,6 +8,7 @@ import {
   proxySubscriptionCreateSchema,
   firstIssueMessage,
 } from "@/lib/proxySubscription";
+import { getProxyCoreStatus } from "@/lib/proxyCore/manager";
 
 /**
  * GET  /api/v1/management/proxy-subscriptions — list all operator subscriptions.
@@ -16,6 +17,10 @@ import {
  * A subscription is an operator-supplied proxy link (Karing-style). On create
  * (and whenever enabled), its nodes are fetched + synced into proxy_registry
  * and bound through the existing account/provider/global scope resolution.
+ *
+ * GET also returns `core` — the embedded mihomo core status snapshot (in-memory,
+ * no IO) so the dashboard can show whether the loopback SOCKS5 endpoint that
+ * needs-core subscriptions point at is actually up.
  */
 export async function GET(request: Request) {
   const authError = await requireManagementAuth(request);
@@ -27,7 +32,7 @@ export async function GET(request: Request) {
     const items = await listSubscriptions();
     // Redact credentials in the subscription URL before sending to the client.
     const safe = items.map((it) => ({ ...it, url: redactSubscriptionUrl(it.url) }));
-    return Response.json({ items: safe });
+    return Response.json({ items: safe, core: getProxyCoreStatus() });
   } catch (error) {
     return createErrorResponseFromUnknown(error, "Failed to list proxy subscriptions");
   }

@@ -6402,6 +6402,12 @@
     "proxyDocumentationTab": "డాక్యుమెంటేషన్",
     "proxySubscriptionsTab": "సబ్‌స్క్రిప్షన్‌లు",
     "proxySubscription": {
+      "coreTitle": "Local proxy core",
+      "coreStateRunning": "running",
+      "coreStateStarting": "starting",
+      "coreStateStopped": "stopped",
+      "coreReady": "ready",
+      "coreErrors": "subscription fetch errors",
       "error": {
         "LOCAL_CORE_ENDPOINT_INVALID": "లోకల్ ప్రోక్సీ-కోర్ ఎండ్‌పాయింట్ చెల్లదు; SS/VMess/Trojan/VLESS నోడ్‌లు విస్మరించబడ్డాయి.",
         "NEEDS_CORE_NOT_CONFIGURED": "ఈ సబ్‌స్క్రిప్షన్‌లో లోకల్ ప్రోక్సీ కోర్ (SS/VMess/Trojan/VLESS) అవసరమైన నోడ్‌లు ఉన్నాయి; మీరు లోకల్-కోర్ SOCKS5 ఎండ్‌పాయింట్‌ను కాన్ఫిగర్ చేసే వరకు అవి రూట్ చేయబడవు.",
@@ -12582,4 +12588,3 @@
   "capabilityFilter.structuredOutputMismatch": "ప్రొవైడర్ నిర్మిత అవుట్‌పుట్‌ను మద్దతు ఇవ్వదు",
   "capabilityFilter.contextWindowMismatch": "అనువర్తన ప్రదాత యొక్క సందర్భం కిటికీని మించు కోరింపు"
 }
-

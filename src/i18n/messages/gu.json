@@ -6402,6 +6402,12 @@
     "proxyDocumentationTab": "દસ્તાવેજીકરણ",
     "proxySubscriptionsTab": "સબ્સ્ક્રિપ્શન્સ",
     "proxySubscription": {
+      "coreTitle": "Local proxy core",
+      "coreStateRunning": "running",
+      "coreStateStarting": "starting",
+      "coreStateStopped": "stopped",
+      "coreReady": "ready",
+      "coreErrors": "subscription fetch errors",
       "error": {
         "LOCAL_CORE_ENDPOINT_INVALID": "લોકલ પ્રોક્સી-કોર એન્ડપોઇન્ટ અમાન્ય છે; SS/VMess/Trojan/VLESS નોડ્સને અવગણવામાં આવ્યા હતા.",
         "NEEDS_CORE_NOT_CONFIGURED": "આ સબ્સ્ક્રિપ્શનમાં એવા નોડ્સ છે જેને લોકલ પ્રોક્સી કોર (SS/VMess/Trojan/VLESS) ની જરૂર છે; જ્યાં સુધી તમે લોકલ-કોર SOCKS5 એન્ડપોઇન્ટ કન્ફિગર ન કરો ત્યાં સુધી તેઓ રાઉટ થશે નહીં.",
@@ -12582,4 +12588,3 @@
   "capabilityFilter.structuredOutputMismatch": "પ્રદાતા સંરચિત આઉટપુટને સમર્થન આપતો નથી",
   "capabilityFilter.contextWindowMismatch": "વિનંતી પ્રદાતા સંદર્ભ વિન્ડોને પાર કરે છે"
 }
-

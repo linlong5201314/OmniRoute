@@ -281,9 +281,24 @@ export class OpencodeExecutor extends BaseExecutor {
       const { log } = input;
       let lastResult: Awaited<ReturnType<BaseExecutor["execute"]>> | null = null;
       let lastError: unknown = null;
+      /**
+       * #Railway-2026-08-17: with all accounts sharing one proxy (the global
+       * OmniProxy subscription), a dead proxy made every account fail
+       * PROXY_UNREACHABLE in ~5ms each — one request burned all 20 accounts and
+       * polluted every cooldown. PROXY_UNREACHABLE is a property of the PROXY,
+       * not the account: remember dead proxies per request and skip accounts
+       * that would egress through one.
+       */
+      const deadProxies = new Set<string>();
+      const proxyKey = (p: OpencodeAccountProxyConfig["proxy"]) => (p ? `${p.host}:${p.port}` : "");
 
       for (let attempt = 0; attempt < this.accounts.length; attempt++) {
         const account = this.pickAccount();
+        // Skip (without dispatching or cooling) accounts whose proxy already
+        // proved unreachable this request — they cannot behave differently.
+        if (account.proxy && deadProxies.has(proxyKey(account.proxy))) {
+          continue;
+        }
         const masked = OpencodeExecutor.maskAccountId(account.fingerprint);
         // #5217 (Gap 2): promoted debug→info so the per-request account/proxy
         // rotation selection is visible in the Console log view at the default
@@ -315,12 +330,21 @@ export class OpencodeExecutor extends BaseExecutor {
           lastError = err;
           const errCode = (err as { code?: string })?.code;
           this.markCooldown(account);
-          log?.warn?.(
-            "OPENCODE",
-            `dispatch error on account ${masked}` +
-              (errCode ? ` (${errCode})` : "") +
-              " — cooling down, rotating to next account…"
-          );
+          if (errCode === "PROXY_UNREACHABLE" && account.proxy) {
+            deadProxies.add(proxyKey(account.proxy));
+            log?.warn?.(
+              "OPENCODE",
+              `proxy ${account.proxy.host}:${account.proxy.port} unreachable on account ${masked}` +
+                " — skipping every account that shares this proxy (fail fast)"
+            );
+          } else {
+            log?.warn?.(
+              "OPENCODE",
+              `dispatch error on account ${masked}` +
+                (errCode ? ` (${errCode})` : "") +
+                " — cooling down, rotating to next account…"
+            );
+          }
           continue;
         }
         lastResult = result;
@@ -474,9 +498,9 @@ export class OpencodeExecutor extends BaseExecutor {
 
     const prompt =
       "You must respond with valid JSON that strictly follows " +
-      "this JSON schema:\\n```json\\n" +
+      "this JSON schema:\n```json\n" +
       schemaJson +
-      "\\n```\\nRespond ONLY with the JSON object, no other text.";
+      "\n```\nRespond ONLY with the JSON object, no other text.";
 
     const messages: Array<Record<string, unknown>> = Array.isArray(record.messages)
       ? (record.messages as Array<Record<string, unknown>>).map((message) => ({ ...message }))
@@ -486,11 +510,11 @@ export class OpencodeExecutor extends BaseExecutor {
 
     if (systemMessage) {
       if (typeof systemMessage.content === "string") {
-        systemMessage.content = `${systemMessage.content}\\n\\n${prompt}`;
+        systemMessage.content = `${systemMessage.content}\n\n${prompt}`;
       } else if (Array.isArray(systemMessage.content)) {
         systemMessage.content.push({
           type: "text",
-          text: `\\n\\n${prompt}`,
+          text: `\n\n${prompt}`,
         });
       }
     } else {

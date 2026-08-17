@@ -6402,6 +6402,12 @@
     "proxyDocumentationTab": "Документация",
     "proxySubscriptionsTab": "Подписки",
     "proxySubscription": {
+      "coreTitle": "Local proxy core",
+      "coreStateRunning": "running",
+      "coreStateStarting": "starting",
+      "coreStateStopped": "stopped",
+      "coreReady": "ready",
+      "coreErrors": "subscription fetch errors",
       "error": {
         "LOCAL_CORE_ENDPOINT_INVALID": "Локальный эндпоинт прокси-ядра недействителен; узлы SS/VMess/Trojan/VLESS были проигнорированы.",
         "NEEDS_CORE_NOT_CONFIGURED": "Эта подписка содержит узлы, которым требуется локальное прокси-ядро (SS/VMess/Trojan/VLESS); они не будут маршрутизироваться, пока вы не настроите SOCKS5-эндпоинт локального ядра.",
@@ -12582,4 +12588,3 @@
   "capabilityFilter.structuredOutputMismatch": "Поставщик не поддерживает структурированный вывод",
   "capabilityFilter.contextWindowMismatch": "Запрос превышает контекстное окно провайдера"
 }
-

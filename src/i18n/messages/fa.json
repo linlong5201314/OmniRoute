@@ -6402,6 +6402,12 @@
     "proxyDocumentationTab": "مستندات",
     "proxySubscriptionsTab": "اشتراک‌ها",
     "proxySubscription": {
+      "coreTitle": "Local proxy core",
+      "coreStateRunning": "running",
+      "coreStateStarting": "starting",
+      "coreStateStopped": "stopped",
+      "coreReady": "ready",
+      "coreErrors": "subscription fetch errors",
       "error": {
         "LOCAL_CORE_ENDPOINT_INVALID": "نقطه پایانی هسته پروکسی محلی نامعتبر است؛ گره‌های SS/VMess/Trojan/VLESS نادیده گرفته شدند.",
         "NEEDS_CORE_NOT_CONFIGURED": "این اشتراک دارای گره‌هایی است که به یک هسته پروکسی محلی (SS/VMess/Trojan/VLESS) نیاز دارند؛ تا زمانی که نقطه پایانی SOCKS5 هسته محلی را پیکربندی نکنید، آن‌ها مسیریابی نمی‌شوند.",
@@ -12582,4 +12588,3 @@
   "capabilityFilter.structuredOutputMismatch": "ارائه‌دهنده خروجی ساختاریافته را پشتیبانی نمی‌کند",
   "capabilityFilter.contextWindowMismatch": "درخواست از حد مجاز پنجره زمینه ارائه‌دهنده فراتر می‌رود"
 }
-

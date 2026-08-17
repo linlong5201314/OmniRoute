@@ -6403,6 +6403,12 @@
     "proxyDocumentationTab": "Dokumentation",
     "proxySubscriptionsTab": "Abonnements",
     "proxySubscription": {
+      "coreTitle": "Local proxy core",
+      "coreStateRunning": "running",
+      "coreStateStarting": "starting",
+      "coreStateStopped": "stopped",
+      "coreReady": "ready",
+      "coreErrors": "subscription fetch errors",
       "error": {
         "LOCAL_CORE_ENDPOINT_INVALID": "Lokaler Proxy-Core-Endpunkt ist ungültig; SS/VMess/Trojan/VLESS-Knoten wurden ignoriert.",
         "NEEDS_CORE_NOT_CONFIGURED": "Dieses Abonnement enthält Knoten, die einen lokalen Proxy-Core benötigen (SS/VMess/Trojan/VLESS); sie werden nicht geroutet, bis Sie den lokalen Core-SOCKS5-Endpunkt konfigurieren.",
@@ -12583,4 +12589,3 @@
   "capabilityFilter.structuredOutputMismatch": "Der Anbieter unterstützt keine strukturierten Ausgaben",
   "capabilityFilter.contextWindowMismatch": "Anfrage überschreitet das Kontextfenster des Anbieters"
 }
-

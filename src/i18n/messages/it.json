@@ -6402,6 +6402,12 @@
     "proxyDocumentationTab": "Documentazione",
     "proxySubscriptionsTab": "Sottoscrizioni",
     "proxySubscription": {
+      "coreTitle": "Local proxy core",
+      "coreStateRunning": "running",
+      "coreStateStarting": "starting",
+      "coreStateStopped": "stopped",
+      "coreReady": "ready",
+      "coreErrors": "subscription fetch errors",
       "error": {
         "LOCAL_CORE_ENDPOINT_INVALID": "L'endpoint del core proxy locale non è valido; i nodi SS/VMess/Trojan/VLESS sono stati ignorati.",
         "NEEDS_CORE_NOT_CONFIGURED": "Questa sottoscrizione contiene nodi che richiedono un core proxy locale (SS/VMess/Trojan/VLESS); non verranno instradati finché non configuri l'endpoint SOCKS5 del core locale.",
@@ -12582,4 +12588,3 @@
   "capabilityFilter.structuredOutputMismatch": "Il provider non supporta l'output strutturato",
   "capabilityFilter.contextWindowMismatch": "La richiesta supera la finestra di contesto del fornitore"
 }
-

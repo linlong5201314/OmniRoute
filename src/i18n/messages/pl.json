@@ -6402,6 +6402,12 @@
     "proxyDocumentationTab": "Dokumentacja",
     "proxySubscriptionsTab": "Subskrypcje",
     "proxySubscription": {
+      "coreTitle": "Local proxy core",
+      "coreStateRunning": "running",
+      "coreStateStarting": "starting",
+      "coreStateStopped": "stopped",
+      "coreReady": "ready",
+      "coreErrors": "subscription fetch errors",
       "error": {
         "LOCAL_CORE_ENDPOINT_INVALID": "Lokalny punkt końcowy rdzenia proxy jest nieprawidłowy; węzły SS/VMess/Trojan/VLESS zostały zignorowane.",
         "NEEDS_CORE_NOT_CONFIGURED": "Ta subskrypcja zawiera węzły, które wymagają lokalnego rdzenia proxy (SS/VMess/Trojan/VLESS); nie są one trasowane, dopóki nie skonfigurujesz punktu końcowego SOCKS5 lokalnego rdzenia.",
@@ -12582,4 +12588,3 @@
   "capabilityFilter.structuredOutputMismatch": "Dostawca nie obsługuje strukturalnego wyjścia",
   "capabilityFilter.contextWindowMismatch": "Żądanie przekracza okno kontekstu dostawcy"
 }
-

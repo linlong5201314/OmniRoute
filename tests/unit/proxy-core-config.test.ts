@@ -100,8 +100,72 @@ describe("proxyCore config generator", () => {
     assert.equal(groups[0].type, "url-test");
     assert.ok(Array.isArray(groups[0].use) && (groups[0].use as string[]).length === 2);
     assert.ok(Number(groups[0].tolerance) > 0);
+    // Provider hosts go DIRECT (bootstrap escape), everything else MATCH,PROXY.
     const rules = doc.rules as string[];
-    assert.deepEqual(rules, ["MATCH,PROXY"]);
+    assert.deepEqual(rules, [
+      "DOMAIN,example.com,DIRECT",
+      "DOMAIN,example.org,DIRECT",
+      "MATCH,PROXY",
+    ]);
+  });
+
+  it("de-duplicates identical provider hosts in the DIRECT rules", () => {
+    const sameHost = [
+      { id: "aaaa1111", name: "A", url: "https://panel.example/sub?token=1" },
+      { id: "bbbb2222", name: "B", url: "https://panel.example/sub?token=2" },
+    ];
+    const doc = yaml.load(buildMihomoConfig(sameHost)!) as Record<string, unknown>;
+    const rules = doc.rules as string[];
+    assert.deepEqual(rules, ["DOMAIN,panel.example,DIRECT", "MATCH,PROXY"]);
+  });
+
+  it("emits an explicit dns section (container 'ip version error' fix)", () => {
+    const doc = yaml.load(buildMihomoConfig(subs)!) as Record<string, unknown>;
+    const dns = doc.dns as Record<string, unknown>;
+    assert.ok(dns, "dns section must be present");
+    assert.equal(dns.enable, true);
+    assert.equal(dns.ipv6, false);
+    const nameservers = dns.nameserver as string[];
+    assert.ok(nameservers.length >= 3, "resolver list must have fallbacks");
+    assert.ok(nameservers.includes("223.5.5.5"));
+    assert.ok(nameservers.includes("8.8.8.8"));
+    // "system" is the exact resolver path that produced version-mismatched
+    // answers on Railway (deploy log 2026-08-17) — it must not be first-class.
+    assert.ok(!nameservers.includes("system"), "must not rely on the system resolver");
+    // DoH cannot bootstrap its own hostname through a broken container
+    // resolver (nested "all DNS requests failed" in the same deploy log).
+    assert.ok(
+      !nameservers.some((n) => n.startsWith("https://")),
+      "no DoH entries — they cannot bootstrap in a DNS-broken container"
+    );
+    // Every resolution path gets an explicit list.
+    for (const key of ["default-nameserver", "proxy-server-nameserver", "direct-nameserver"]) {
+      const list = dns[key] as string[];
+      assert.ok(Array.isArray(list) && list.length > 0, `${key} must be set`);
+    }
+  });
+
+  it("injects platform resolvers first and dedupes (resolv.conf path)", () => {
+    const doc = yaml.load(
+      buildMihomoConfig(subs, 2080, [
+        "10.0.0.1",
+        "127.0.0.11",
+        "10.0.0.1",
+        "not-an-ip",
+        "",
+        "8.8.8.8",
+      ])
+    )! as Record<string, unknown>;
+    const dns = doc.dns as Record<string, unknown>;
+    const nameservers = dns.nameserver as string[];
+    // Only valid IPs survive, duplicates collapse, platform first, public kept.
+    assert.deepEqual(nameservers.slice(0, 2), ["10.0.0.1", "127.0.0.11"]);
+    assert.ok(nameservers.includes("223.5.5.5"));
+    assert.equal(new Set(nameservers).size, nameservers.length, "nameservers must be deduped");
+    // The same list feeds every resolution path.
+    assert.deepEqual(dns["proxy-server-nameserver"], nameservers);
+    assert.deepEqual(dns["direct-nameserver"], nameservers);
+    assert.deepEqual(dns["default-nameserver"], nameservers);
   });
 
   it("de-duplicates colliding provider keys", () => {

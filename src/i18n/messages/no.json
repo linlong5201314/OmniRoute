@@ -6402,6 +6402,12 @@
     "proxyDocumentationTab": "Dokumentasjon",
     "proxySubscriptionsTab": "Abonnementer",
     "proxySubscription": {
+      "coreTitle": "Local proxy core",
+      "coreStateRunning": "running",
+      "coreStateStarting": "starting",
+      "coreStateStopped": "stopped",
+      "coreReady": "ready",
+      "coreErrors": "subscription fetch errors",
       "error": {
         "LOCAL_CORE_ENDPOINT_INVALID": "Lokalt endepunkt for proxykjernen er ugyldig; SS/VMess/Trojan/VLESS-noder ble ignorert.",
         "NEEDS_CORE_NOT_CONFIGURED": "Dette abonnementet har noder som krever en lokal proxykjerne (SS/VMess/Trojan/VLESS); de rutes ikke før du konfigurerer SOCKS5-endepunktet for den lokale kjernen.",
@@ -12582,4 +12588,3 @@
   "capabilityFilter.structuredOutputMismatch": "Leverandøren støtter ikke strukturert utdata",
   "capabilityFilter.contextWindowMismatch": "Forespørselen overskrider leverandørens kontekstvindu"
 }
-
