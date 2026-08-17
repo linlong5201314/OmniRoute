@@ -23,6 +23,19 @@ export const opencodeProvider: RegistryEntry = {
       interleavedField: "reasoning_content",
     },
     { id: "deepseek-v4-flash-free", name: "DeepSeek V4 Flash Free", supportsReasoning: true },
+    // Effort-tier aliases of the free flash model (same shape as the opencode-go
+    // deepseek-v4-flash high/max variants): rewritten to the base model +
+    // reasoning_effort by OpencodeExecutor.parseEffortLevel.
+    {
+      id: "deepseek-v4-flash-free-high",
+      name: "DeepSeek V4 Flash Free (High)",
+      supportsReasoning: true,
+    },
+    {
+      id: "deepseek-v4-flash-free-max",
+      name: "DeepSeek V4 Flash Free (Max)",
+      supportsReasoning: true,
+    },
     // #6998: 2026-07-14 refresh — the upstream free tier rotated its lineup;
     // minimax-m3-free, minimax-m2.5-free, ling-2.6-1t-free,
     // trinity-large-preview-free, nemotron-3-super-free and qwen3.6-plus-free

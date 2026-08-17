@@ -89,6 +89,17 @@ export const opencode_zenProvider: RegistryEntry = {
     // nemotron-3-super-free and qwen3.6-plus-free were delisted (401). Replaced
     // by the 4 entries below with upstream-verified limits.
     { id: "deepseek-v4-flash-free", name: "DeepSeek V4 Flash Free", supportsReasoning: true },
+    // Effort-tier aliases of the free flash model (mirrors the noauth tier).
+    {
+      id: "deepseek-v4-flash-free-high",
+      name: "DeepSeek V4 Flash Free (High)",
+      supportsReasoning: true,
+    },
+    {
+      id: "deepseek-v4-flash-free-max",
+      name: "DeepSeek V4 Flash Free (Max)",
+      supportsReasoning: true,
+    },
     { id: "mimo-v2.5-free", name: "MiMo V2.5 Free", contextLength: 200000 },
     { id: "hy3-free", name: "HY3 Free", contextLength: 200000 },
     { id: "nemotron-3-ultra-free", name: "Nemotron 3 Ultra Free", contextLength: 1000000 },

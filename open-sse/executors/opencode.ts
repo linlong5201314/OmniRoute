@@ -83,6 +83,9 @@ const OPENCODE_FREE_MODELS = new Set([
 const EFFORT_TIERS: Record<string, readonly string[]> = {
   "deepseek-v4-pro": EFFORT_LEVELS,
   "deepseek-v4-flash": ["high", "max"],
+  // Free-tier flash effort aliases (opencode / opencode-zen noauth): same
+  // high/max tiers as the paid flash model on opencode-go.
+  "deepseek-v4-flash-free": ["high", "max"],
   "glm-5.2": ["high", "max"],
   "mimo-v2.5": ["high", "max"],
   "grok-4.5": ["low", "medium", "high"],
@@ -125,6 +128,15 @@ export function isPremiumOpencodeModel(model: string, provider: string): boolean
 
   // Models ending in `-free` are always free on the noauth/zen tier.
   if (model.endsWith("-free")) return false;
+
+  // Effort-tier aliases (e.g. deepseek-v4-flash-free-max) do NOT end in `-free`
+  // — classify them by their BASE model so a free variant stays free (otherwise
+  // a keyless connection would get a bogus 402 premium_model_requires_key).
+  const effortBase = parseEffortLevel(model)?.baseModel;
+  if (effortBase) {
+    if (effortBase.endsWith("-free")) return false;
+    return !OPENCODE_FREE_MODELS.has(effortBase);
+  }
 
   // Check the known free model catalog.
   return !OPENCODE_FREE_MODELS.has(model);
@@ -268,6 +280,7 @@ export class OpencodeExecutor extends BaseExecutor {
 
       const { log } = input;
       let lastResult: Awaited<ReturnType<BaseExecutor["execute"]>> | null = null;
+      let lastError: unknown = null;
 
       for (let attempt = 0; attempt < this.accounts.length; attempt++) {
         const account = this.pickAccount();
@@ -287,9 +300,29 @@ export class OpencodeExecutor extends BaseExecutor {
         // Pin egress to this account's proxy for the whole BaseExecutor dispatch
         // (incl. its intra-URL 429 retries). skipUpstreamRetry lets THIS loop own
         // the cross-account 429 fallback instead of BaseExecutor's same-key retry.
-        const result = await runWithProxyContext(account.proxy, () =>
-          super.execute({ ...input, skipUpstreamRetry: true })
-        );
+        //
+        // A dead/unreachable per-account proxy makes the dispatch THROW
+        // (PROXY_UNREACHABLE / network error — skipUpstreamRetry disables
+        // BaseExecutor's intra-URL fallback, so the error escapes). Catch it,
+        // cool the account down, and rotate — one unstable proxy must not fail
+        // the whole request when the pool exists precisely to survive it.
+        let result: Awaited<ReturnType<BaseExecutor["execute"]>>;
+        try {
+          result = await runWithProxyContext(account.proxy, () =>
+            super.execute({ ...input, skipUpstreamRetry: true })
+          );
+        } catch (err) {
+          lastError = err;
+          const errCode = (err as { code?: string })?.code;
+          this.markCooldown(account);
+          log?.warn?.(
+            "OPENCODE",
+            `dispatch error on account ${masked}` +
+              (errCode ? ` (${errCode})` : "") +
+              " — cooling down, rotating to next account…"
+          );
+          continue;
+        }
         lastResult = result;
 
         const status = result.response.status;
@@ -303,8 +336,13 @@ export class OpencodeExecutor extends BaseExecutor {
         return result;
       }
 
-      // All accounts returned 429 (or errored) — surface the last response.
-      return lastResult ?? (await super.execute(input));
+      // All accounts exhausted. Surface the last HTTP response when there was
+      // one (e.g. every account returned 429); otherwise rethrow the last
+      // dispatch error — fail closed. A direct-egress fallback here would leak
+      // the operator IP and hit the very per-IP rate limits the pool dodges.
+      if (lastResult) return lastResult;
+      if (lastError) throw lastError;
+      return await super.execute(input);
     } finally {
       this._requestFormat = null;
     }
@@ -405,8 +443,10 @@ export class OpencodeExecutor extends BaseExecutor {
    * json_object so callers still receive structured JSON.
    */
   private applyDeepSeekJsonSchemaFallback<T>(model: string, body: T): T {
+    // Covers the base free model AND its effort variants (-high/-max), which
+    // hit the same upstream endpoint after the alias rewrite.
     if (
-      model !== "deepseek-v4-flash-free" ||
+      !model.startsWith("deepseek-v4-flash-free") ||
       (this.provider !== "opencode" && this.provider !== "opencode-zen")
     ) {
       return body;
