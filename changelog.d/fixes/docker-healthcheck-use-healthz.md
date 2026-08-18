@@ -1,0 +1,1 @@
+- **fix(ops):** Docker HEALTHCHECK now probes lightweight `/healthz` instead of the SQLite-backed monitoring endpoint, preventing busy replicas from being restarted during normal load.
